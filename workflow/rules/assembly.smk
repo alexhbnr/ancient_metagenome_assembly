@@ -164,7 +164,6 @@ elif config['assembler'] == "metaspades":
                 --only-assembler
             """
 
-
     rule cleanup_metaspades:
         input:
             "{tmpdir}/assembly/metaspades/{sample}/contigs.fasta"
