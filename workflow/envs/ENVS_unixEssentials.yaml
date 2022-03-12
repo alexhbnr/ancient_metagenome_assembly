@@ -1,0 +1,8 @@
+name: unixEssentials
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - pigz
+  - tar

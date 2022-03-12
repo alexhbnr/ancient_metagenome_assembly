@@ -1,0 +1,38 @@
+import os
+
+import pandas as pd
+from snakemake.utils import min_version
+
+min_version("6.0")
+
+configfile: "config/config.yaml"
+
+os.makedirs("snakemake_tmp", exist_ok=True)
+
+#### Parse sample table ########################################################
+sampletsv = pd.read_csv(config['sampletsv'], sep="\t", index_col=[0])
+sampletsv.index = sampletsv.index.astype(str)
+SAMPLES = sampletsv.index.tolist()
+################################################################################
+
+#### Include sub-workflows #####################################################
+
+include: "rules/assembly.smk"
+include: "rules/alignment.smk"
+
+################################################################################
+
+rule all:
+    input:
+        f"{config['tmpdir']}/alignment.done"
+
+rule validate_sampletsv:
+    output:
+        touch(f"{config['tmpdir']}/sampletsv.validated")
+    message: "Validate the correctness of the input table"
+    params:
+        sampletsv = lambda wildcards: config['sampletsv'],
+        assembler = lambda wildcards: config['assembler'],
+        readcorrection = lambda wildcards: config['readcorrection']
+    script:
+        "scripts/validate_sampletsv.py"

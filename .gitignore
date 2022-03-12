@@ -1,0 +1,4 @@
+.snakemake
+conda
+results
+tmp
