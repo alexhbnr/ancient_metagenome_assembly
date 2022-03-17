@@ -71,9 +71,10 @@ elif config['assembler'] == "metaspades":
         output:
             "{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
         message: "Copy FastA file: {wildcards.sample}"
+        conda: "../envs/ENVS_samtools.yaml"
         shell:
             """
-            cp {input} {output}
+            zcat {input} | bgzip > {output}
             """
 
     rule link_bam:

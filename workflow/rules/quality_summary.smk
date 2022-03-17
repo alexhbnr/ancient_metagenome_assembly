@@ -50,6 +50,6 @@ rule metaQUAST:
             --ambiguity-usage all \
             --no-icarus \
             --no-read-stats \
-            {input}
+            {input} && touch {output}
         """
 ################################################################################
