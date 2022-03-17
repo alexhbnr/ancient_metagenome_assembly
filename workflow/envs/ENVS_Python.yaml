@@ -1,0 +1,15 @@
+name: Python
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.9
+  - pip
+  - pandas=1.4
+  - numpy
+  - scipy
+  - pysam=0.18.0
+  - pyfastx
+  - pip:
+      - bgzip
