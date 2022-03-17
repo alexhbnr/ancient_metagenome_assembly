@@ -24,7 +24,7 @@ include: "rules/rename_sort_contigs.smk"
 include: "rules/finalise_alignments.smk"
 include: "rules/quality_summary.smk"
 include: "rules/prokka.smk"
-#include: "rules/pydamage.smk"
+include: "rules/pydamage.smk"
 
 ################################################################################
 
@@ -34,7 +34,8 @@ rule all:
         expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
         expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
         expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
+        expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
 
 rule validate_sampletsv:
     output:
