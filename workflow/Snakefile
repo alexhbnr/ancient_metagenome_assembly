@@ -19,16 +19,23 @@ SAMPLES = sampletsv.index.tolist()
 
 include: "rules/assembly.smk"
 include: "rules/alignment.smk"
+include: "rules/consensus_correction.smk"
+include: "rules/rename_sort_contigs.smk"
+include: "rules/finalise_alignments.smk"
+#include: "rules/quality_summary.smk"
+#include: "rules/prokka.smk"
+#include: "rules/pydamage.smk"
 
 ################################################################################
 
 rule all:
     input:
-        f"{config['tmpdir']}/alignment.done"
+        expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
 
 rule validate_sampletsv:
     output:
-        touch(f"{config['tmpdir']}/sampletsv.validated")
+        touch("{tmpdir}/sampletsv.validated")
     message: "Validate the correctness of the input table"
     params:
         sampletsv = lambda wildcards: config['sampletsv'],
