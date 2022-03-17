@@ -114,7 +114,8 @@ rule BowTie2_alignment:
 
 rule samtools_sort:
     input:
-        "{tmpdir}/alignment/{assembler}/{sample}.sorted.raw.sam",
+        bam = "{tmpdir}/alignment/{assembler}/{sample}.sorted.raw.sam",
+        fasta = "{tmpdir}/alignment/{assembler}/{sample}.raw.fasta"
     output:
         bam = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam",
         bai = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai"
@@ -126,14 +127,15 @@ rule samtools_sort:
     threads: 2
     shell:
         """
-        samtools view -Sb {input} | \
+        samtools view -Sb {input.bam} | \
+        samtools calmd -u /dev/stdin {input.fasta} | \
         samtools sort -l 4 -o {output.bam} -
         samtools index {output.bam}
         """
 
 rule samtools_depth:
     input:
-        "{tmpdir}/alignment/{assembler}/{sample}.sorted.raw.bam"
+        "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam"
     output:
         temp("{tmpdir}/alignment/{assembler}/{sample}.samtools_depth")
     message: "Determine the depth along the contigs with samtools: {wildcards.sample}"

@@ -41,7 +41,7 @@ rule error_correction:
         pe0 = lambda wildcards: f"-s {sampletsv.at[wildcards.sample, 'R0']}" if not np.isnan(sampletsv.at['SPM001', 'R0']) else "",
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
         output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz",
-        singleend_data = lambda wildcards: ~np.isnan(sampletsv.at['SPM001', 'R0']),
+        singleend_data = lambda wildcards: ~np.isnan(sampletsv.at[wildcards.sample, 'R0']),
         memory = 72,
         outdir = "{tmpdir}/error_correction/spadeshammer_{sample}"
     threads: 18
