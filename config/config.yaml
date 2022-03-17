@@ -6,3 +6,4 @@ readcorrection: false
 min_contiglength: 500
 assembly_mem: 500  # memory requested for assembly
 metaspades_kmers: 21,33,55
+bowtie2_seed_nmismatches: 1
