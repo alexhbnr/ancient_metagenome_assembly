@@ -93,5 +93,5 @@ rule samtools_index:
         cores = 1
     shell:
         """
-        samtools index {input}
+        samtools index {input.bam}
         """
