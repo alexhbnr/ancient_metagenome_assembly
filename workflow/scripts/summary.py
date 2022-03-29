@@ -59,13 +59,19 @@ reads_df['fracMapped'] = reads_df['mappedReads'] / reads_df['totalReads']
 metaquast = []
 for s in snakemake.params.samples:
     if os.path.isfile(f"{snakemake.params.metaquast_dir}/{s}-{snakemake.params.assembler}/combined_reference/transposed_report.tsv"):
-        report = pd.read_csv(f"{snakemake.params.metaquast_dir}/{s}-{snakemake.params.assembler}/combined_reference/transposed_report.tsv",
+        fn = f"{snakemake.params.metaquast_dir}/{s}-{snakemake.params.assembler}/combined_reference/transposed_report.tsv"
+    elif os.path.isfile(f"{snakemake.params.metaquast_dir}/{s}-{snakemake.params.assembler}/transposed_report.tsv"):
+        fn = f"{snakemake.params.metaquast_dir}/{s}-{snakemake.params.assembler}/transposed_report.tsv"
+    else:
+        fn = ""
+    if fn != "":
+        report = pd.read_csv(fn,
                             sep="\t", usecols=['# contigs (>= 1000 bp)', '# contigs (>= 5000 bp)', '# contigs (>= 10000 bp)',
                                                 '# contigs (>= 25000 bp)', '# contigs (>= 50000 bp)']) \
             .assign(sample=s)
         metaquast.append(report)
 metaquast_df = pd.concat(metaquast)
-metaquast_df.columns = [f"nContigs_{size}bp" 
+metaquast_df.columns = [f"nContigs_{size}bp"
                         for c in metaquast_df.columns[:-1]
                         for size in re.search(r"# contigs \(>= ([0-9]+) bp\)", c).groups(1)] + ['sample']
 
