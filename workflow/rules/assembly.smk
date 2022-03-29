@@ -1,11 +1,10 @@
-import numpy as np
 import pandas as pd
 
 #### Auxilliary functions ######################################################
 
 def path_to_r0(sample, tmpdir):
     # TODO: Test on data that also has single-end data
-    if np.isnan(sampletsv.at[sample, 'R0']):  # no single-end data
+    if sampletsv.at[sample, 'R0'] == "NA":  # no single-end data
         return ""
     else:
         if config['readcorrection'] == "true":
@@ -38,10 +37,11 @@ rule error_correction:
     params: 
         pe1 = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'],
         pe2 = lambda wildcards: sampletsv.at[wildcards.sample, 'R2'],
-        pe0 = lambda wildcards: f"-s {sampletsv.at[wildcards.sample, 'R0']}" if not np.isnan(sampletsv.at['SPM001', 'R0']) else "",
+        pe0 = lambda wildcards: f"-s {sampletsv.at[wildcards.sample, 'R0']}" if sampletsv.at[wildcards.sample, 'R0'] != "NA" else "",
+        fileprefix = lambda wildcards: os.path.basename(sampletsv.at[wildcards.sample, 'R1']).split("_")[0],
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
         output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz",
-        singleend_data = lambda wildcards: ~np.isnan(sampletsv.at[wildcards.sample, 'R0']),
+        singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
         memory = 72,
         outdir = "{tmpdir}/error_correction/spadeshammer_{sample}"
     threads: 18
@@ -57,10 +57,10 @@ rule error_correction:
             --threads {threads} \
             --memory {params.memory} \
             --only-error-correction
-        mv {params.outdir}/corrected/{wildcards.sample}_1.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe1}
-        mv {params.outdir}/corrected/{wildcards.sample}_2.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe2}
+        mv {params.outdir}/corrected/{params.fileprefix}_1.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe1}
+        mv {params.outdir}/corrected/{params.fileprefix}_2.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe2}
         if [[ "{params.singleend_data}" = "True" ]]; then
-            mv {params.outdir}/corrected/{wildcards.sample}__unpaired.00.0_0.cor.fastq.gz {params.output_pe0}
+            mv {params.outdir}/corrected/{params.fileprefix}__unpaired.00.0_0.cor.fastq.gz {params.output_pe0}
         fi
         rm -r {params.outdir}
         """
@@ -80,7 +80,8 @@ if config['assembler'] == "megahit":
         conda: "../envs/ENVS_MEGAHIT.yaml"
         resources:
             mem = lambda wildcards: int(config['assembly_mem'] / 2),
-            cores = 24
+            cores = 24,
+            assembly = 1
         params: 
             pe1 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_1.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R1'],
             pe2 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_2.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R2'],
@@ -143,6 +144,7 @@ elif config['assembler'] == "metaspades":
         resources:
             mem = config['assembly_mem'],
             cores = 24,
+            assembly = 1
         params: 
             pe1 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_1.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R1'],
             pe2 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_2.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R2'],

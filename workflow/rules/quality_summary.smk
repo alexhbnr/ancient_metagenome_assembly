@@ -1,5 +1,7 @@
 #### CalN50 ####################################################################
 
+localrules: download_caln50_script
+
 rule download_caln50_script:
     output:
         "{tmpdir}/scripts/caln50.js"
@@ -38,7 +40,8 @@ rule metaQUAST:
     conda: "../envs/ENVS_quast.yaml"
     resources:
         mem = 24,
-        cores = 8
+        cores = 8,
+        metaquast = 1
     params:
         outdir = "{resultdir}/stats//metaquast/{sample}-{assembler}"
     threads: 8

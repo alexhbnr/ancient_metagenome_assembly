@@ -3,16 +3,6 @@ import pandas as pd
 
 MINLENGTH = config['min_contiglength']
 
-def path_to_r0(sample, tmpdir):
-    # TODO: Test on data that also has single-end data
-    if np.isnan(sampletsv.at[sample, 'R0']):  # no single-end data
-        return ""
-    else:
-        if config['readcorrection'] == "true":
-            return f"{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz"
-        else:
-            return sampletsv.at[sample, 'R0']
-
 rule alignment_workflow:
     input: 
         expand("{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai", tmpdir=[config['tmpdir']], assembler=[config['assembler']], sample=SAMPLES)

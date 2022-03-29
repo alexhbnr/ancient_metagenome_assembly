@@ -134,16 +134,16 @@ elif config['assembler'] == "metaspades":
 
     rule link_reffasta:
         input:
-            lambda wildcards: f"{config['tmpdir']}/assembly/{wildcards.sample}_metaspades.done"
+            lambda wildcards: f"{config['tmpdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.raw.fasta"
         output:
             "{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz"
         message: "Link the FastA file with the de-novo assembled contigs of metaSPAdes without corrections: {wildcards.sample}"
+        conda: "../envs/ENVS_samtools.yaml"
         resources:
             mem = 2,
             cores = 1
-        params:
-            fasta = lambda wildcards: f"{config['resultdir']}/assembly/{wildcards.sample}-metaspades.fa.gz",
+        threads: 1
         shell:
             """
-            ln -s ${{PWD}}/{params.fasta} {output}
+            bgzip -c {input} > {output}
             """

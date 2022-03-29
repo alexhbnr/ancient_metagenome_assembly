@@ -74,14 +74,14 @@ elif config['assembler'] == "metaspades":
         conda: "../envs/ENVS_samtools.yaml"
         shell:
             """
-            zcat {input} | bgzip > {output}
+            ln -s {input} {output}
             """
 
     rule link_bam:
         input:
             bam = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam",
             bai = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai",
-            fasta = lambda wildcards: f"{config['resultdir']}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
+            fasta = lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}.fasta.gz"
         output:
             bam = temp("{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam"),
             bai = temp("{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam.bai"),
@@ -91,6 +91,6 @@ elif config['assembler'] == "metaspades":
             cores = 1
         shell:
             """
-            ln -s ${{PWD}}/{input.bam} {output.bam}
-            ln -s ${{PWD}}/{input.bai} {output.bai}
+            ln -s {input.bam} {output.bam}
+            ln -s {input.bai} {output.bai}
             """
