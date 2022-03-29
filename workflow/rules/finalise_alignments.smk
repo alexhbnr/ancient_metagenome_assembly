@@ -64,9 +64,26 @@ rule samtools_markup:
         samtools markdup -r -s -@ {threads} {input.bam} {output} 2> {log}
         """
 
-rule samtools_index:
+rule samtools_flagstat:
     input:
         "{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam"
+    output:
+        "{resultdir}/stats/flagstat/{sample}-{assembler}.flagstat"
+    message: "Samtools flagstat: {wildcards.sample}"
+    conda: "../envs/ENVS_samtools.yaml"
+    resources:
+        mem = 4,
+        cores = 1
+    threads: 1
+    shell:
+        """
+        samtools flagstat {input} > {output}
+        """
+
+rule samtools_index:
+    input:
+        bam = "{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam",
+        flagstat = "{resultdir}/stats/flagstat/{sample}-{assembler}.flagstat"
     output:
         "{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai"
     message: "Index deduplicated BAM file: {wildcards.sample}"

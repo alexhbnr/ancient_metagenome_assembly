@@ -1,3 +1,4 @@
+projname: "aDNA_assembly"
 sampletsv: "test/samples.tsv"
 tmpdir: "tmp"
 resultdir: "results"

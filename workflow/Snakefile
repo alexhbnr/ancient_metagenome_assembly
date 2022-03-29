@@ -34,12 +34,7 @@ localrules: validate_sampletsv
 
 rule all:
     input:
-        expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
+        f"{config['resultdir']}/summary_{config['projname']}.tsv"
 
 rule validate_sampletsv:
     output:
@@ -52,67 +47,25 @@ rule validate_sampletsv:
     script:
         "scripts/validate_sampletsv.py"
 
-#rule summarise_caln50:
-    #input:
-        #expand("04-analysis/assembly/summary_stats/{sample}.caln", sample=SAMPLES)
-    #output:
-        #total_length = "05-results/SMDT_calN50_total_length.summary.tsv",
-        #n_contigs = "05-results/SMDT_calN50_ncontigs.summary.tsv",
-        #nx_lx = "05-results/SMDT_calN50_n50.summary.tsv"
-    #message: "Summarise calN50 output"
-    #run:
-        #total_length = [] 
-        #number_contigs = []
-        #nx_lx = []
-
-        ## Extract information from file names
-        #extract_fn = re.compile(r'([0-9]+M_[a-z]+_[a-z]+_[0-9])-([a-z]+)-([a-z]+)\.caln')
-        #extract_gargammel = re.compile(r'([0-9]+M)_([a-z]+)_([a-z]+)_([0-9])')
-
-        ## Process individual files
-        #for fn in input:
-            #sample, readcorr, assembler = extract_fn.search(os.path.basename(fn)).groups()
-            #depth, rlength, deam, repeat = extract_gargammel.search(sample).groups()
-            #nl = []
-            #with open(fn, "rt") as caln50file:
-                #for line in caln50file:
-                    #infotype = line.split("\t")[0]
-                    #if infotype == "SZ":
-                        #total_length.append((rlength, deam, depth, assembler, readcorr,
-                                             #int(repeat), line.rstrip().split("\t")[1]))
-                    #elif infotype == "NN":
-                        #number_contigs.append((rlength, deam, depth, assembler, readcorr,
-                                               #int(repeat), line.rstrip().split("\t")[1]))
-                    #elif infotype == "NL":
-                        #nl.append(line.rstrip().split("\t")[1:])
-                    #nx_lx.append(pd.DataFrame(nl, columns=['x', 'Nx', 'Lx']) \
-                        #.assign(rlength=rlength) \
-                        #.assign(deam=deam) \
-                        #.assign(depth=depth) \
-                        #.assign(assembler=assembler) \
-                        #.assign(readcorr=readcorr) \
-                        #.assign(repeat=int(repeat)))
-
-        ## Summarise total length
-        #total_length_df = pd.DataFrame(total_length, columns=["rlength", "deam", "depth", "assembler",
-                                                              #"readcorr", "repeat", "length"])
-        #total_length_df['length'] = total_length_df['length'].astype(int)
-        #total_length_df.sort_values(['rlength', 'deam', 'depth', 'assembler', 'readcorr', 'repeat']) \
-            #.to_csv(output.total_length, sep="\t", index=False)
-
-        ## Summarise number of contigs
-        #n_contigs_df = pd.DataFrame(number_contigs, columns=["rlength", "deam", "depth", "assembler",
-                                                             #"readcorr", "repeat", "count"])
-        #n_contigs_df['count'] = n_contigs_df['count'].astype(int)
-        #n_contigs_df.sort_values(['rlength', 'deam', 'depth', 'assembler', 'readcorr', 'repeat']) \
-            #.to_csv(output.n_contigs, sep="\t", index=False)
-
-        ## Summarise N50
-        #nx_lx_df = pd.concat(nx_lx)
-        #nx_lx_df['Nx'] = nx_lx_df['Nx'].astype(int)
-        #nx_lx_df['Lx'] = nx_lx_df['Lx'].astype(int)
-        #nx_lx_df['x'] = nx_lx_df['x'].astype(int)
-        #nx_lx_df.drop_duplicates() \
-            #.sort_values(['rlength', 'deam', 'depth', 'assembler', 'readcorr', 'repeat']) \
-            #[['rlength', 'deam', 'depth', 'assembler', 'readcorr', 'repeat', 'x', 'Nx', 'Lx']] \
-            #.to_csv(output.nx_lx, sep="\t", index=False)
+rule summary:
+    input:
+        consensus_correction = expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        dedup = expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        caln50 = expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        metaquast = expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        prokka = expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
+        pydamage = expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
+    output:
+        "{resultdir}/summary_{projname}.tsv"
+    message: "Create a summary file of the assembly process"
+    params:
+        samples = SAMPLES,
+        assembler = config['assembler'],
+        caln50_dir = "{resultdir}/stats/caln50",
+        flagstat_dir = "{resultdir}/stats/flagstat",
+        metaquast_dir = "{resultdir}/stats/metaquast",
+        prokka_dir = "{resultdir}/prokka",
+        pydamage = lambda wildcards: config['pydamage'],
+        pydamage_dir = "{resultdir}/pydamage"
+    script:
+        "scripts/summary.py"
