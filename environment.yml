@@ -1,0 +1,8 @@
+name: ancient_metagenome_assembly
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - snakemake>=7.0
+  - mamba
