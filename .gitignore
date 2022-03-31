@@ -1,4 +1,6 @@
 .snakemake
 conda
 results
+snakemake_tmp
+test/*.fastq.gz
 tmp
