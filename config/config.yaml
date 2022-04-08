@@ -2,10 +2,25 @@ projname: "aDNA_assembly"
 sampletsv: "test/samples.tsv"
 tmpdir: "tmp"
 resultdir: "results"
+resourcedir: "resources"
+# Assembly
 assembler: "megahit"  # megahit or metaspades
 readcorrection: false
 min_contiglength: 500
 assembly_mem: 500  # memory requested for assembly
 metaspades_kmers: 21,33,55
+# Alignment
 bowtie2_seed_nmismatches: 1
-pydamage: true
+# aDNA damage analysis
+pydamage: true # perform aDNA damage analysis
+# MAG binning
+magbinning: true
+magbinning_type: "metawrap"  # metawrap as a wrapper or individual
+metabat2: true
+maxbin2: true
+concoct: true
+# MAG refinement
+magrefinement: true
+magrefiner: "metawrap" # metawrap or dastool
+min_completeness: 50
+max_contamination: 10

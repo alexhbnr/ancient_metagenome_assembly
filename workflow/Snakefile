@@ -27,14 +27,18 @@ include: "rules/finalise_alignments.smk"
 include: "rules/quality_summary.smk"
 include: "rules/prokka.smk"
 include: "rules/pydamage.smk"
+include: "rules/binning.smk"
+include: "rules/quality_evaluation.smk"
+include: "rules/refinement.smk"
 
 ################################################################################
 
 localrules: validate_sampletsv
 
 rule all:
-    input:
-        f"{config['resultdir']}/summary_{config['projname']}.tsv"
+	input:
+		f"{config['resultdir']}/summary_{config['projname']}.tsv",
+		expand("{resultdir}/magbinning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']])
 
 rule validate_sampletsv:
     output:
