@@ -1,5 +1,6 @@
 projname: "aDNA_assembly"
 sampletsv: "test/samples.tsv"
+wildcard_constraint_samples: "[A-Z]+[0-9]+"
 tmpdir: "tmp"
 resultdir: "results"
 resourcedir: "resources"
@@ -12,15 +13,17 @@ metaspades_kmers: 21,33,55
 # Alignment
 bowtie2_seed_nmismatches: 1
 # aDNA damage analysis
-pydamage: true # perform aDNA damage analysis
+pydamage: true  # perform aDNA damage analysis
 # MAG binning
 magbinning: true
-magbinning_type: "metawrap"  # metawrap as a wrapper or individual
+magbinning_type: "individual"  # metawrap as a wrapper or individual
 metabat2: true
 maxbin2: true
 concoct: true
+min_binninglength: 1000
+maxbin2_markerset: 40  # 107 (bact) or 40 (bact and arch)
 # MAG refinement
 magrefinement: true
-magrefiner: "metawrap" # metawrap or dastool
+magrefiner: "metawrap"  # metawrap or dastool
 min_completeness: 50
 max_contamination: 10

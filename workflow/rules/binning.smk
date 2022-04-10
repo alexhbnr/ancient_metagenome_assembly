@@ -94,13 +94,13 @@ if config['magbinning']:
                     "{tmpdir}/binning/{sample}-{assembler}.reorder.bam"
                 output:
                     "{tmpdir}/binning/metabat2/{sample}-{assembler}.depth"
-                message: "Determine the depth along the contigs for metaBAT2: {wildcards.sample}"
+                message: "Determine the average depth of the contigs for metaBAT2: {wildcards.sample}"
                 resources:
                     mem = 8
                 params:
                     minlength = config['min_binninglength']
                 wrapper:
-                    "file:///home/alexander_huebner/github/snakemake-wrappers/bio/metabat2/depth"
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metabat2/depth"
 
             rule metabat2:
                 input:
@@ -116,4 +116,59 @@ if config['magbinning']:
                     outprefix = "{tmpdir}/binning/metabat2/{sample}-{assembler}"
                 threads: 8
                 wrapper:
-                    "file:///home/alexander_huebner/github/snakemake-wrappers/bio/metabat2/metabat2"
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metabat2/metabat2"
+
+        if config['maxbin2']:
+
+            rule maxbin2_depth:
+                input:
+                    "{tmpdir}/binning/{sample}-{assembler}.reorder.bam"
+                output:
+                    temp("{tmpdir}/binning/maxbin2/{sample}-{assembler}.metabat2_depth")
+                message: "Determine the average depth of the contigs for MaxBin2: {wildcards.sample}"
+                resources:
+                    mem = 8
+                params:
+                    minlength = config['min_binninglength']
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metabat2/depth"
+
+            rule format_maxbin2_depth:
+                input:
+                    "{tmpdir}/binning/maxbin2/{sample}-{assembler}.metabat2_depth"
+                output:
+                    "{tmpdir}/binning/maxbin2/{sample}-{assembler}.depth"
+                message: "Format the depth output for MaxBin2: {wildcards.sample}"
+                run:
+                    with open(output[0], "wt") as outfile:
+                        with open(input[0], "rt") as depthfile:
+                            for i, line in enumerate(depthfile):
+                                if i > 0:
+                                    contig, _, depth = line.split("\t")[:3]
+                                    outfile.write(f"{contig}\t{depth}\n")
+
+            rule decompress_fasta_maxbin2:
+                input:
+                    lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}.fasta.gz"
+                output:
+                    "{tmpdir}/binning/maxbin2/{sample}-{assembler}.fa"
+                message: "Decompress the FastA file with the contigs for MaxBin2: {wildcards.sample}"
+                shell:
+                    "gunzip -c {input} > {output}"
+
+            rule maxbin2:
+                input:
+                    fasta = "{tmpdir}/binning/maxbin2/{sample}-{assembler}.fa",
+                    depth = "{tmpdir}/binning/maxbin2/{sample}-{assembler}.depth"
+                output:
+                    "{tmpdir}/binning/maxbin2/{sample}-{assembler}.noclass"
+                message: "Bin the de-novo assembled contigs using MaxBin2: {wildcards.sample}"
+                resources:
+                    mem = 16
+                params:
+                    minlength = config['min_binninglength'],
+                    markerset = lambda wildcards: config['maxbin2_markerset'],
+                    outprefix = "{tmpdir}/binning/maxbin2/{sample}-{assembler}"
+                threads: 8
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/maxbin2"
