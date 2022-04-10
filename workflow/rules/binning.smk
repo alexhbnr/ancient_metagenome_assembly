@@ -151,7 +151,7 @@ if config['magbinning']:
                 input:
                     lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}.fasta.gz"
                 output:
-                    "{tmpdir}/binning/maxbin2/{sample}-{assembler}.fa"
+                    temp("{tmpdir}/binning/maxbin2/{sample}-{assembler}.fa")
                 message: "Decompress the FastA file with the contigs for MaxBin2: {wildcards.sample}"
                 shell:
                     "gunzip -c {input} > {output}"
@@ -172,3 +172,68 @@ if config['magbinning']:
                 threads: 8
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/maxbin2"
+
+        if config['concoct']:
+
+            rule decompress_fasta_concot:
+                input:
+                    lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}.fasta.gz"
+                output:
+                    temp("{tmpdir}/binning/concoct/{sample}-{assembler}.fa")
+                message: "Decompress the FastA file with the contigs for CONCOCT: {wildcards.sample}"
+                shell:
+                    "gunzip -c {input} > {output}"
+
+            rule concoct_split_contigs:
+                input:
+                    "{tmpdir}/binning/concoct/{sample}-{assembler}.fa"
+                output:
+                    fa = temp("{tmpdir}/binning/concoct/{sample}-{assembler}_10K.fa"),
+                    bed = temp("{tmpdir}/binning/concoct/{sample}-{assembler}_10K.bed")
+                message: "Split the contigs into chunks of max. 10 kb: {wildcards.sample}"
+                resources:
+                    mem = 4
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/split_contigs"
+
+            rule concoct_coverage_table:
+                input:
+                    bed = "{tmpdir}/binning/concoct/{sample}-{assembler}_10K.bed",
+                    bam = "{tmpdir}/binning/{sample}-{assembler}.reorder.bam",
+                    bai = "{tmpdir}/binning/{sample}-{assembler}.reorder.bam.bai"
+                output:
+                    "{tmpdir}/binning/concoct/{sample}-{assembler}.depth"
+                message: "Calculate the depth along the contigs: {wildcards.sample}"
+                resources:
+                    mem = 4
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/coverage_table"
+
+            rule concoct:
+                input:
+                    fa = "{tmpdir}/binning/concoct/{sample}-{assembler}_10K.fa",
+                    depth = "{tmpdir}/binning/concoct/{sample}-{assembler}.depth"
+                output:
+                    "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_args.txt"
+                message: "Bin the de-novo assembled contigs using CONCOCT: {wildcards.sample}"
+                resources:
+                    mem = 4
+                params:
+                    minlength = config['min_binninglength'],
+                    outprefix = "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}"
+                threads: 8
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/concoct"
+
+            rule concoct_merge_contigs:
+                input:
+                    "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_args.txt"
+                output:
+                    "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_clustering.csv"
+                message: "Split the contigs into chunks of max. 10 kb: {wildcards.sample}"
+                resources:
+                    mem = 4
+                params:
+                    clustering = lambda wildcards: f"{wildcards.tmpdir}/binning/concoct/{wildcards.sample}-{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}_clustering_gt{config['min_binninglength']}.csv"
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/merge_contigs"
