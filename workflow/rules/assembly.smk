@@ -110,7 +110,7 @@ if config['assembler'] == "megahit":
         input:
             "{tmpdir}/assembly/megahit/{sample}/final.contigs.fa"
         output:
-            touch("{tmpdir}/assembly/{sample}_megahit.done"),
+            touch("{tmpdir}/assembly/{sample}_megahit.done")
         message: "Clean up assembly folder of MEGAHIT: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:

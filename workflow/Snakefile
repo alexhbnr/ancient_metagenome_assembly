@@ -1,4 +1,7 @@
+from glob import glob
 import os
+from pathlib import Path
+import shutil
 
 import pandas as pd
 from snakemake.utils import min_version
@@ -33,12 +36,16 @@ include: "rules/refinement.smk"
 
 ################################################################################
 
+wildcard_constraints:
+    assembler = "(megahit|metaspades)",
+    sample = config['wildcard_constraint_samples']
+
 localrules: validate_sampletsv
 
 rule all:
 	input:
 		f"{config['resultdir']}/summary_{config['projname']}.tsv",
-		expand("{resultdir}/magbinning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']])
+		expand("{resultdir}/binning/{sample}-{assembler}_binning.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']])
 
 rule validate_sampletsv:
     output:

@@ -72,7 +72,7 @@ if config['magbinning']:
                 original_bam = lambda wildcards: f"{config['tmpdir']}/binning/{wildcards.sample}-{wildcards.assembler}.reorder.bam",
                 original_bai = lambda wildcards: f"{config['tmpdir']}/binning/{wildcards.sample}-{wildcards.assembler}.reorder.bam.bai"
             output:
-                touch("{resultdir}/magbinning/{sample}-{assembler}_binning.done") 
+                touch("{resultdir}/binning/{sample}-{assembler}_binning.done")
             message: "Running the metaWRAP binning module on {wildcards.sample}"
             resources:
                 mem = 60,
@@ -117,6 +117,21 @@ if config['magbinning']:
                 threads: 8
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metabat2/metabat2"
+
+            rule summarise_metabat2:
+                input:
+                    lambda wildcards: f"{config['tmpdir']}/binning/metabat2/{wildcards.sample}-{wildcards.assembler}.unbinned.fa"
+                output:
+                    "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/metabat2_bins/bin.unbinned.fa"
+                message: "Copy bins into the folder structure expected by MetaWRAP: {wildcards.sample}"
+                resources:
+                    mem = 2
+                params:
+                    metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/metabat2_bins"
+                run:
+                    for fn in glob(f"{input[0].replace('.unbinned.fa', '')}.*.fa"):
+                        if fn.split(".")[-2] == "unbinned" or fn.split(".")[-2].isnumeric():
+                            shutil.copy(fn, f"{params.metawrapdir}/bin.{fn.split('.')[-2]}.fa")
 
         if config['maxbin2']:
 
@@ -172,6 +187,30 @@ if config['magbinning']:
                 threads: 8
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/maxbin2"
+
+            rule summarise_maxbin2:
+                input:
+                    lambda wildcards: f"{config['tmpdir']}/binning/maxbin2/{wildcards.sample}-{wildcards.assembler}.noclass"
+                output:
+                    "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/maxbin2_bins/{sample}-{assembler}.summary"
+                message: "Copy bins into the folder structure expected by MetaWRAP: {wildcards.sample}"
+                resources:
+                    mem = 2
+                params:
+                    metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/maxbin2_bins"
+                run:
+                    for fn in glob(f"{input[0].replace('.noclass', '')}.*.fasta"):
+                        shutil.copy(fn, f"{params.metawrapdir}/bin.{int(fn.split('.')[-2]) - 1}.fa")
+                    if os.path.isfile(input[0].replace('.noclass', '.log')):
+                        shutil.copy(input[0].replace('.noclass', '.log'),
+                                    f"{params.metawrapdir}/{wildcards.sample}-{wildcards.assembler}.log")
+                    else:
+                        Path(f"{params.metawrapdir}/{wildcards.sample}-{wildcards.assembler}.log").touch()
+                    if os.path.isfile(input[0].replace('.noclass', '.summary')):
+                        shutil.copy(input[0].replace('.noclass', '.summary'),
+                                    f"{params.metawrapdir}/{wildcards.sample}-{wildcards.assembler}.summary")
+                    else:
+                        Path(output[0]).touch()
 
         if config['concoct']:
 
@@ -230,10 +269,32 @@ if config['magbinning']:
                     "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_args.txt"
                 output:
                     "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_clustering.csv"
-                message: "Split the contigs into chunks of max. 10 kb: {wildcards.sample}"
+                message: "Merge the split contigs: {wildcards.sample}"
                 resources:
                     mem = 4
                 params:
                     clustering = lambda wildcards: f"{wildcards.tmpdir}/binning/concoct/{wildcards.sample}-{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}_clustering_gt{config['min_binninglength']}.csv"
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/merge_contigs"
+
+            rule summarise_concoct:
+                input:
+                    cluster = lambda wildcards: f"{config['tmpdir']}/binning/concoct/{wildcards.sample}-{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}_clustering.csv",
+                    fasta = "{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
+                output:
+                    "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins/{sample}-{assembler}.clustering.csv"
+                message: "Copy CONCOCT bins into the folder structure expected by MetaWRAP: {wildcards.sample}"
+                resources:
+                    mem = 2
+                params:
+                    metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins"
+                wrapper:
+                    "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/extract_bins"
+
+        rule checkpoint_binning:
+            input:
+                metabat2 = lambda wildcards: f"{config['resultdir']}/binning/metawrap/INITIAL_BINNING/{wildcards.sample}-{wildcards.assembler}/metabat2_bins/bin.unbinned.fa" if config['metabat2'] else [],
+                maxbin2 = lambda wildcards: f"{config['resultdir']}/binning/metawrap/INITIAL_BINNING/{wildcards.sample}-{wildcards.assembler}/maxbin2_bins/{wildcards.sample}-{wildcards.assembler}.summary" if config['maxbin2'] else [],
+                concoct = lambda wildcards: f"{config['resultdir']}/binning/metawrap/INITIAL_BINNING/{wildcards.sample}-{wildcards.assembler}/concoct_bins/{wildcards.sample}-{wildcards.assembler}.clustering.csv" if config['concoct'] else []
+            output:
+                touch("{resultdir}/binning/{sample}-{assembler}_binning.done")
