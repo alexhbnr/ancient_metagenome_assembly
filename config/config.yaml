@@ -27,3 +27,5 @@ magrefinement: true
 magrefiner: "metawrap"  # metawrap or dastool
 min_completeness: 50
 max_contamination: 10
+# Quality evaluation
+quality_evaluation: ['checkm', 'busco', 'gunc']

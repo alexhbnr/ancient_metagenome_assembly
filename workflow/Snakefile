@@ -1,6 +1,7 @@
 from glob import glob
 import os
 from pathlib import Path
+import re
 import shutil
 
 import pandas as pd
@@ -45,7 +46,8 @@ localrules: validate_sampletsv
 rule all:
 	input:
 		f"{config['resultdir']}/summary_{config['projname']}.tsv",
-		expand("{resultdir}/binning/{sample}-{assembler}_binning.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']])
+        expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']]),
+        expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']])
 
 rule validate_sampletsv:
     output:
