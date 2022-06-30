@@ -2,12 +2,12 @@ if config['magrefinement']:
 
     if config['magrefiner'] == "metawrap":
     
-        rule metaWRAP_refinement:
+        checkpoint metaWRAP_refinement:
             input:
                 checkm = f"{config['resourcedir']}/checkM/setRoot.done",
-                binning = "{resultdir}/magbinning/{sample}-{assembler}_binning.done"
+                binning = "{resultdir}/binning/{sample}-{assembler}_binning.done"
             output:
-                touch("{resultdir}/magbinning/{sample}-{assembler}_refinement.done")
+                touch("{resultdir}/binning/{sample}-{assembler}_refinement.done")
             message: "Running the metaWRAP bin refinement module on {wildcards.sample}"
             resources:
                 mem = 80,
