@@ -1,0 +1,9 @@
+name: metaWRAP
+channels:
+  - conda-forge
+  - ursky
+  - bioconda
+  - defaults
+dependencies:
+  - metawrap-mg=1.3.2
+  - blas=2.5=mkl
