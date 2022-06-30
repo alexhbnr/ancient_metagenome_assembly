@@ -287,7 +287,8 @@ if config['magbinning']:
                 resources:
                     mem = 2
                 params:
-                    metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins"
+                    metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins",
+                    min_contiglength = config['min_binninglength']
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/extract_bins"
 
