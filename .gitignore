@@ -1,6 +1,8 @@
 .snakemake
 busco_downloads
 conda
+phylophlan_metagenomic.txt
+resources
 results
 snakemake_tmp
 test/*.fastq.gz

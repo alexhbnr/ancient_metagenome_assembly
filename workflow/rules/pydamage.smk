@@ -44,7 +44,7 @@ if config['pydamage']:
             rev_index2 = "{tmpdir}/pydamage/{assembler}/{sample}.rev.2.bt2"
         output:
             pipe("{tmpdir}/pydamage/{assembler}/{sample}.sorted.raw.sam")
-        message: "Align the non-UDG reads back to the uncorrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
+        message: "Align the non-UDG reads back to the corrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
         conda: "../envs/ENVS_bowtie2.yaml"
         resources:
             mem = 16,

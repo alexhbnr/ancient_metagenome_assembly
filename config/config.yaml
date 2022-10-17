@@ -29,3 +29,6 @@ min_completeness: 50
 max_contamination: 10
 # Quality evaluation
 quality_evaluation: ['checkm', 'busco', 'gunc']
+# Taxonomic profiling
+taxonomic_profiling: true
+taxprofilers: ['phylophlan3', 'gtdbtk', 'kraken2']

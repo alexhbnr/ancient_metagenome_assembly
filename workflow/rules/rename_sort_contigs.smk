@@ -16,7 +16,7 @@ if config['assembler'] == "megahit":
             temp("{tmpdir}/alignment/{assembler}/{sample}.avg_depth")
         message: "Infer mean coverage per contig: {wildcards.sample}"
         resources:
-            mem = 8,
+            mem = lambda wildcards, attempt: 8 + attempt * 4,
             cores = 1
         run:
             pd.read_csv(input[0],
