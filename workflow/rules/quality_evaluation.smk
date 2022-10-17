@@ -73,7 +73,7 @@ if "checkm" in config['quality_evaluation']:
             binning = lambda wildcards: f"{config['resultdir']}/binning/{wildcards.sample}-{wildcards.assembler}_refinement.done",
             db = lambda wildcards: f"{config['resourcedir']}/checkM/setRoot.done" 
         output:
-            "{tmpdir}/checkM/{sample}-{assembler}/storage/marker_gene_stats.tsv"
+            "{tmpdir}/checkM/{sample}-{assembler}/storage/bin_stats.analyze.tsv"
         message: "Run checkM using lineage-specific workflow on sample {wildcards.sample}"
         resources:
             mem = 80,
@@ -88,7 +88,7 @@ if "checkm" in config['quality_evaluation']:
 
     rule checkM_qa:
         input:
-            lambda wildcards: f"{config['tmpdir']}/checkM/{wildcards.sample}-{wildcards.assembler}/storage/marker_gene_stats.tsv"
+            lambda wildcards: f"{config['tmpdir']}/checkM/{wildcards.sample}-{wildcards.assembler}/storage/bin_stats.analyze.tsv"
         output:
             "{resultdir}/stats/checkM/{sample}-{assembler}.checkM.txt"
         message: "Generate extended checkM report for sample {wildcards.sample}"
