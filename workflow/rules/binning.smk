@@ -298,4 +298,6 @@ if config['magbinning']:
                 maxbin2 = lambda wildcards: f"{config['resultdir']}/binning/metawrap/INITIAL_BINNING/{wildcards.sample}-{wildcards.assembler}/maxbin2_bins/{wildcards.sample}-{wildcards.assembler}.summary" if config['maxbin2'] else [],
                 concoct = lambda wildcards: f"{config['resultdir']}/binning/metawrap/INITIAL_BINNING/{wildcards.sample}-{wildcards.assembler}/concoct_bins/{wildcards.sample}-{wildcards.assembler}.clustering.csv" if config['concoct'] else []
             output:
-                touch("{resultdir}/binning/{sample}-{assembler}_binning.done")
+                "{resultdir}/binning/{sample}-{assembler}_binning.done"
+            shell:
+                "touch {output}"
