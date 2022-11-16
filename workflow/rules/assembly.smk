@@ -110,7 +110,7 @@ if config['assembler'] == "megahit":
         input:
             "{tmpdir}/assembly/megahit/{sample}/final.contigs.fa"
         output:
-            touch("{tmpdir}/assembly/{sample}_megahit.done")
+            "{tmpdir}/assembly/{sample}_megahit.done"
         message: "Clean up assembly folder of MEGAHIT: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
@@ -127,7 +127,8 @@ if config['assembler'] == "megahit":
             mkdir -p $(dirname {params.tar})
             tar -czvf {params.tar} {params.dir}/intermediate_contigs/
             pigz -p {threads} -c {input} > {params.fasta}  
-            cp {params.dir}/log {params.logfile} 
+            cp {params.dir}/log {params.logfile}
+            touch {output}
             """
 
 elif config['assembler'] == "metaspades":
@@ -170,7 +171,7 @@ elif config['assembler'] == "metaspades":
         input:
             "{tmpdir}/assembly/metaspades/{sample}/contigs.fasta"
         output:
-            touch("{tmpdir}/assembly/{sample}_metaspades.done")
+            "{tmpdir}/assembly/{sample}_metaspades.done"
         message: "Clean up assembly folder of metaSPAdes: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
@@ -189,4 +190,5 @@ elif config['assembler'] == "metaspades":
             tar -czvf {params.tar} {params.dir}/{{assembly_graph.fastg,before_rr.fasta,contigs.fasta,contigs.paths,scaffolds.fasta,scaffolds.paths}}
             pigz -p {threads} -c {params.scaffolds} > {params.fasta}  
             cp {params.dir}/spades.log {params.logfile} 
+            touch {output}
             """
