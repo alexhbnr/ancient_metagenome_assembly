@@ -59,11 +59,11 @@ if len(snakemake.input.checkm) > 0:
                       'checkM.translation_table', 'checkM.completeness',
                       'checkM.contamination', 'checkM.strain_heterogeneity']
     ## BUSCO
-    busco_generic = busco.loc[busco['lineage'].isin(['bacteria_odb10'])] \
+    busco_generic = busco.loc[busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])] \
         .drop(['lineage'], axis=1)
     busco_generic.columns = [f"BUSCO_generic.{v}" if i > 0 else v
                              for i, v in enumerate(busco_generic.columns)]
-    busco_specific = busco.loc[~busco['lineage'].isin(['bacteria_odb10'])]
+    busco_specific = busco.loc[~busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])]
     busco_specific.columns = [f"BUSCO_specific.{v}" if i > 0 else v
                               for i, v in enumerate(busco_specific.columns)]
 
