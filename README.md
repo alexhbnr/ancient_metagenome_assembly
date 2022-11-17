@@ -13,7 +13,7 @@ developed in the Nextflow pipeline [nf-core/mag](https://github.com/nf-core/mag)
 ## Quick start
 
 To be able to run the pipeline, [Snakemake](https://snakemake.readthedocs.io/) with a minimal
-version of 6.0 is necessary. The easiest way to install the dependencies of this program and to have
+version of 7.0 is necessary. The easiest way to install the dependencies of this program and to have
 reproducible results is to create a new [conda](https://docs.conda.io/en/latest/) environment using
 the environment file provided with it.
 
@@ -72,3 +72,11 @@ By activating the options `--use-conda`, `snakemake` will download and install t
 necessary to run the pipeline via conda and store them into the folder `conda`. This step will only
 happen once, at the first time or when you change the folder for storing these conda environments
 using `--conda-prefix`.
+
+## Overview of the pipeline
+
+### Input files
+
+### Parameters to adjust the pipeline
+
+### Output files

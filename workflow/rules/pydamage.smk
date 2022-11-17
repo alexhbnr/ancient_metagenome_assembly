@@ -1,7 +1,6 @@
 import pandas as pd
 
 def path_to_nonudg_r0(sample, tmpdir):
-    # TODO: Test on data that also has single-end data
     if sampletsv.at[sample, 'nonUDG_R0'] == "NA":  # no single-end data
         return ""
     else:

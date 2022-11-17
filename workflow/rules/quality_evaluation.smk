@@ -110,6 +110,9 @@ if "busco" in config['quality_evaluation']:
         output:
             directory("{resultdir}/stats/busco/{sample}-{assembler}/{b}")
         message: "Run BUSCO on the contigs: {wildcards.sample}"
+        resources:
+            mem = 36,
+            cores = 8
         params:
             mode = "genome",
             lineage = "auto-lineage-prok",

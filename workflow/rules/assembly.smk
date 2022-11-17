@@ -3,7 +3,6 @@ import pandas as pd
 #### Auxilliary functions ######################################################
 
 def path_to_r0(sample, tmpdir):
-    # TODO: Test on data that also has single-end data
     if sampletsv.at[sample, 'R0'] == "NA":  # no single-end data
         return ""
     else:
