@@ -51,14 +51,14 @@ if config['pydamage']:
         params:
             index = "{tmpdir}/pydamage/{assembler}/{sample}",
             n_mismatches = lambda wildcards: config['bowtie2_seed_nmismatches'],
-            pe1 = lambda wildcards: sampletsv.at[wildcards.sample, 'nonUDG_R1'],
-            pe2 = lambda wildcards: sampletsv.at[wildcards.sample, 'nonUDG_R2'],
-            pe0 = lambda wildcards: f"-U {path_to_nonudg_r0(wildcards.sample, wildcards.tmpdir)}" if path_to_nonudg_r0(wildcards.sample, wildcards.tmpdir) != "" else "",
+            pe1 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "nonUDG_R1", '1'),
+            pe2 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "nonUDG_R2", '2'),
+            pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "nonUDG_R0", 'U')
         threads: 16
         shell:
             """
             bowtie2 -p {threads} --very-sensitive -N {params.n_mismatches} -x {params.index} \
-                    -1 {params.pe1} -2 {params.pe2} {params.pe0} -S {output}
+                    {params.pe1} {params.pe2} {params.pe0} -S {output}
             """
 
     rule samtools_sort_pydamage:

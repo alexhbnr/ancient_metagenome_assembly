@@ -1,15 +1,17 @@
 import pandas as pd
 
+
 #### Auxilliary functions ######################################################
 
-def path_to_r0(sample, tmpdir):
-    if sampletsv.at[sample, 'R0'] == "NA":  # no single-end data
+def path_to_r(sample, tmpdir, suffix, prefix):
+    path = sampletsv.at[sample, suffix]
+    if type(path) is float or path == "" or path == "NA":
         return ""
     else:
         if config['readcorrection'] == "true":
-            return f"{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz"
+            return f"-{prefix} {tmpdir}/error_correction/{sample}-wreadcorr_{suffix[-1]}.fastq.gz"
         else:
-            return sampletsv.at[sample, 'R0']
+            return f"-{prefix} {path}"
 
 ################################################################################
 
@@ -59,7 +61,8 @@ rule error_correction:
         mv {params.outdir}/corrected/{params.fileprefix}_1.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe1}
         mv {params.outdir}/corrected/{params.fileprefix}_2.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe2}
         if [[ "{params.singleend_data}" = "True" ]]; then
-            mv {params.outdir}/corrected/{params.fileprefix}__unpaired.00.0_0.cor.fastq.gz {params.output_pe0}
+            cat {params.outdir}/corrected/{params.fileprefix}__unpaired.00.0_1.cor.fastq.gz \
+                {params.outdir}/corrected/{params.fileprefix}_0.{params.filesuffix}.00.0_0.cor.fastq.gz > {params.output_pe0}
         fi
         rm -r {params.outdir}
         """
@@ -82,9 +85,9 @@ if config['assembler'] == "megahit":
             cores = 24,
             assembly = 1
         params: 
-            pe1 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_1.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R1'],
-            pe2 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_2.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R2'],
-            pe0 = lambda wildcards: f"-r {path_to_r0(wildcards.sample, wildcards.tmpdir)}" if path_to_r0(wildcards.sample, wildcards.tmpdir) != "" else "",
+            pe1 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R1", '1'),
+            pe2 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R2", '2'),
+            pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 'r'),
             memory = f"{int(config['assembly_mem'] / 2)}00000000",
             prefix = "{tmpdir}/assembly/megahit/{sample}",
             tmpdir = "tmp",
@@ -97,8 +100,8 @@ if config['assembler'] == "megahit":
             fi
             megahit \
                 -t {threads} \
-                -1 {params.pe1} \
-                -2 {params.pe2} \
+                {params.pe1} \
+                {params.pe2} \
                 {params.pe0} \
                 --tmp-dir {params.tmpdir} \
                 --min-contig-len {params.minlength} \
@@ -146,9 +149,9 @@ elif config['assembler'] == "metaspades":
             cores = 24,
             assembly = 1
         params: 
-            pe1 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_1.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R1'],
-            pe2 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_2.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R2'],
-            pe0 = lambda wildcards: f"-r {path_to_r0(wildcards.sample, wildcards.tmpdir)}" if path_to_r0(wildcards.sample, wildcards.tmpdir) != "" else "",
+            pe1 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R1", 1),
+            pe2 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R2", 2),
+            pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 0),
             outdir = "{tmpdir}/assembly/metaspades/{sample}",
             memory = config['assembly_mem'],
             kmers = config['metaspades_kmers']

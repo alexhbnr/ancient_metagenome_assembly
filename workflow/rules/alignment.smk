@@ -92,14 +92,14 @@ rule BowTie2_alignment:
     params:
         index = "{tmpdir}/alignment/{assembler}/{sample}",
         n_mismatches = lambda wildcards: config['bowtie2_seed_nmismatches'],
-        pe1 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_1.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R1'],
-        pe2 = lambda wildcards: f"{wildcards.tmpdir}/error_correction/{wildcards.sample}-wreadcorr_2.fastq.gz" if config['readcorrection'] else sampletsv.at[wildcards.sample, 'R2'],
-        pe0 = lambda wildcards: f"-U {path_to_r0(wildcards.sample, wildcards.tmpdir)}" if path_to_r0(wildcards.sample, wildcards.tmpdir) != "" else "",
+        pe1 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R1", '1'),
+        pe2 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R2", '2'),
+        pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 'U')
     threads: 16
     shell:
         """
         bowtie2 -p {threads} --very-sensitive -N {params.n_mismatches} -x {params.index} \
-                -1 {params.pe1} -2 {params.pe2} {params.pe0} -S {output}
+                {params.pe1} {params.pe2} {params.pe0} -S {output}
         """
 
 rule samtools_sort:
