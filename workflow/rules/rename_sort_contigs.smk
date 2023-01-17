@@ -74,7 +74,7 @@ elif config['assembler'] == "metaspades":
         conda: "../envs/ENVS_samtools.yaml"
         shell:
             """
-            ln -s {input} {output}
+            ln -s ${{PWD}}/{input} {output}
             """
 
     rule link_bam:
@@ -91,6 +91,6 @@ elif config['assembler'] == "metaspades":
             cores = 1
         shell:
             """
-            ln -s {input.bam} {output.bam}
-            ln -s {input.bai} {output.bai}
+            ln -s ${{PWD}}/{input.bam} {output.bam}
+            ln -s ${{PWD}}/{input.bai} {output.bai}
             """
