@@ -149,9 +149,9 @@ elif config['assembler'] == "metaspades":
             cores = 24,
             assembly = 1
         params: 
-            pe1 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R1", 1),
-            pe2 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R2", 2),
-            pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 0),
+            pe1 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R1", '1'),
+            pe2 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R2", '2'),
+            pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 's'),
             outdir = "{tmpdir}/assembly/metaspades/{sample}",
             memory = config['assembly_mem'],
             kmers = config['metaspades_kmers']
@@ -159,8 +159,8 @@ elif config['assembler'] == "metaspades":
         shell:
             """
             metaspades.py -o {params.outdir} \
-                -1 {params.pe1} \
-                -2 {params.pe2} \
+                {params.pe1} \
+                {params.pe2} \
                 {params.pe0} \
                 -k {params.kmers} \
                 --threads {threads} \
