@@ -38,6 +38,19 @@ include: "rules/taxonomic_profiling.smk"
 
 ################################################################################
 
+#### Expected files ############################################################
+
+def expected_taxprofilers():
+    taxprofilers = []
+    if config['taxonomic_profiling']:
+        if 'gtdbtk' in config['taxprofilers']:
+            taxprofilers.append(f"{config['resultdir']}/stats/gtdbtk/gtdbtk.bac120.summary.tsv")
+        if 'phylophlan3' in config['taxprofilers']:
+            taxprofilers.append(f"{config['resultdir']}/stats/phylophlan3/phylophlan3_mash.tsv")
+    return taxprofilers
+
+################################################################################
+
 wildcard_constraints:
     assembler = "(megahit|metaspades)",
     sample = config['wildcard_constraint_samples']
@@ -47,10 +60,11 @@ localrules: validate_sampletsv
 rule all:
 	input:
 		f"{config['resultdir']}/summary_{config['projname']}.tsv",
+        f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done",
+        # TODO: summarise all bins for a project
         expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']]),
         expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']]),
-        f"{config['resultdir']}/stats/phylophlan3/phylophlan3_mash.tsv",
-        f"{config['resultdir']}/stats/gtdbtk/gtdbtk.bac120.summary.tsv"
+        
 
 rule validate_sampletsv:
     output:
@@ -85,3 +99,21 @@ rule summary:
         pydamage_dir = "{resultdir}/pydamage"
     script:
         "scripts/summary.py"
+
+rule rename_taxprofilers:
+    input:
+        expected_taxprofilers()
+    output:
+        f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done"
+    message: "Add project name to taxprofiler names"
+    run:
+        if len(input) > 0:
+            if 'gtdbtk' in config['taxprofilers']:
+                if os.path.islink(f"{config['resultdir']}/stats/gtdbtk/gtdbtk.bac120.summary.tsv"):
+                    shutil.copy2(f"{config['resultdir']}/stats/gtdbtk/gtdbtk.bac120.summary.tsv",
+                                 f"{config['resultdir']}/stats/gtdbtk/gtdbtk.{config['projname']}_bac120.summary.tsv") 
+                if os.path.islink(f"{config['resultdir']}/stats/gtdbtk/gtdbtk.ar53.summary.tsv"):
+                    shutil.copy2(f"{config['resultdir']}/stats/gtdbtk/gtdbtk.ar53.summary.tsv",
+                                 f"{config['resultdir']}/stats/gtdbtk/gtdbtk.{config['projname']}_ar53.summary.tsv") 
+            # TODO: add PhyloPhlAn3
+        Path(output[0]).touch()
