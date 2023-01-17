@@ -33,7 +33,7 @@ rule error_correction:
     message: "Correct reads of sample {wildcards.sample} using SPAdes hammer"
     conda: "../envs/ENVS_metaSPAdes.yaml"
     resources:
-        mem = 80,
+        mem = config['assembly_mem'],
         cores = 18
     params: 
         pe1 = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'],
@@ -43,7 +43,7 @@ rule error_correction:
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
         output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz",
         singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
-        memory = 72,
+        mem = int(config['assembly_mem'] * 0.9),
         outdir = "{tmpdir}/error_correction/spadeshammer_{sample}"
     threads: 18
     shell:
