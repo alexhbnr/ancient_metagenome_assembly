@@ -43,7 +43,7 @@ rule error_correction:
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
         output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz",
         singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
-        mem = int(config['assembly_mem'] * 0.9),
+        memory = int(config['assembly_mem'] * 0.9),
         outdir = "{tmpdir}/error_correction/spadeshammer_{sample}"
     threads: 18
     shell:
@@ -61,8 +61,8 @@ rule error_correction:
         mv {params.outdir}/corrected/{params.fileprefix}_1.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe1}
         mv {params.outdir}/corrected/{params.fileprefix}_2.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe2}
         if [[ "{params.singleend_data}" = "True" ]]; then
-            cat {params.outdir}/corrected/{params.fileprefix}__unpaired.00.0_1.cor.fastq.gz \
-                {params.outdir}/corrected/{params.fileprefix}_0.{params.filesuffix}.00.0_0.cor.fastq.gz > {params.output_pe0}
+            cat {params.outdir}/corrected/{params.fileprefix}__unpaired.00.0_0.cor.fastq.gz \
+                {params.outdir}/corrected/{params.fileprefix}_0.{params.filesuffix}.00.0_1.cor.fastq.gz > {params.output_pe0}
         fi
         rm -r {params.outdir}
         """
