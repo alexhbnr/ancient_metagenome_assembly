@@ -1,3 +1,5 @@
+import yaml
+
 import pandas as pd
 
 
@@ -8,10 +10,21 @@ def path_to_r(sample, tmpdir, suffix, prefix):
     if type(path) is float or path == "" or path == "NA":
         return ""
     else:
-        if config['readcorrection'] == "true":
+        if config['readcorrection']:
             return f"-{prefix} {tmpdir}/error_correction/{sample}-wreadcorr_{suffix[-1]}.fastq.gz"
         else:
             return f"-{prefix} {path}"
+
+
+def path_to_corrected_r(wildcards, suffix):
+    with open(checkpoints.error_correction.get(**wildcards).output[0], "rt") as yamlfile:
+        corr = yaml.safe_load(yamlfile)
+    if suffix == 1:
+        return corr[0]['left reads'][0]
+    elif suffix == 2:
+        return corr[0]['right reads'][0]
+    elif suffix == 0:
+        return " ".join(sorted(corr[0]['single reads']))
 
 ################################################################################
 
@@ -24,12 +37,11 @@ rule assembly_workflow:
 
 #### Error correction with SPAdes-hammer ######################################
 
-rule error_correction:
+checkpoint error_correction:
     input:
         "{tmpdir}/sampletsv.validated"
     output:
-        pe1 = "{tmpdir}/error_correction/{sample}-wreadcorr_1.fastq.gz",
-        pe2 = "{tmpdir}/error_correction/{sample}-wreadcorr_2.fastq.gz",
+        "{tmpdir}/error_correction/spadeshammer_{sample}/corrected/corrected.yaml"
     message: "Correct reads of sample {wildcards.sample} using SPAdes hammer"
     conda: "../envs/ENVS_metaSPAdes.yaml"
     resources:
@@ -41,8 +53,6 @@ rule error_correction:
         pe0 = lambda wildcards: f"-s {sampletsv.at[wildcards.sample, 'R0']}" if sampletsv.at[wildcards.sample, 'R0'] != "NA" else "",
         fileprefix = lambda wildcards: os.path.basename(sampletsv.at[wildcards.sample, 'R1']).split("_")[0],
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
-        output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz",
-        singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
         memory = int(config['assembly_mem'] * 0.9),
         outdir = "{tmpdir}/error_correction/spadeshammer_{sample}"
     threads: 18
@@ -58,13 +68,28 @@ rule error_correction:
             --threads {threads} \
             --memory {params.memory} \
             --only-error-correction
-        mv {params.outdir}/corrected/{params.fileprefix}_1.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe1}
-        mv {params.outdir}/corrected/{params.fileprefix}_2.{params.filesuffix}.00.0_0.cor.fastq.gz {output.pe2}
+        """
+
+rule rename_spadeshammer_fastqs:
+    input:
+        "{tmpdir}/error_correction/spadeshammer_{sample}/corrected/corrected.yaml"
+    output:
+        pe1 = "{tmpdir}/error_correction/{sample}-wreadcorr_1.fastq.gz",
+        pe2 = "{tmpdir}/error_correction/{sample}-wreadcorr_2.fastq.gz"
+    message: "Rename the corrected FastQs: {wildcards.sample}"
+    params:
+        singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
+        pe1 = lambda wildcards: path_to_corrected_r(wildcards, 1),
+        pe2 = lambda wildcards: path_to_corrected_r(wildcards, 2),
+        pe0 = lambda wildcards: path_to_corrected_r(wildcards, 0),
+        output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz"
+    shell:
+        """
+        mv {params.pe1} {output.pe1}
+        mv {params.pe2} {output.pe2}
         if [[ "{params.singleend_data}" = "True" ]]; then
-            cat {params.outdir}/corrected/{params.fileprefix}__unpaired.00.0_0.cor.fastq.gz \
-                {params.outdir}/corrected/{params.fileprefix}_0.{params.filesuffix}.00.0_1.cor.fastq.gz > {params.output_pe0}
+            cat {params.pe0} > {params.output_pe0}
         fi
-        rm -r {params.outdir}
         """
 
 ##### Assembly ##################################################################
