@@ -43,12 +43,14 @@ rule metaQUAST:
         cores = 8,
         metaquast = 1
     params:
-        outdir = "{resultdir}/stats//metaquast/{sample}-{assembler}"
+        outdir = "{resultdir}/stats//metaquast/{sample}-{assembler}",
+        reffa = lambda wildcards: f"-r {config['reference_database']}" if config['reference_database'] != "" else "", 
     threads: 8
     shell:
         """
         metaquast.py \
             -o {params.outdir} \
+            {params.reffa} \
             --threads {threads} \
             --ambiguity-usage all \
             --no-icarus \
