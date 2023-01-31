@@ -39,16 +39,18 @@ rule metaQUAST:
     message: "Run metaQUAST on the contigs: {wildcards.sample}"
     conda: "../envs/ENVS_quast.yaml"
     resources:
-        mem = 24,
+        mem = lambda wildcards, attempt: 24 + attempt * 24,
         cores = 8,
         metaquast = 1
     params:
-        outdir = "{resultdir}/stats//metaquast/{sample}-{assembler}"
+        outdir = "{resultdir}/stats//metaquast/{sample}-{assembler}",
+        reffa = lambda wildcards: f"-r {config['reference_database']}" if config['reference_database'] != "" else "", 
     threads: 8
     shell:
         """
         metaquast.py \
             -o {params.outdir} \
+            {params.reffa} \
             --threads {threads} \
             --ambiguity-usage all \
             --no-icarus \
