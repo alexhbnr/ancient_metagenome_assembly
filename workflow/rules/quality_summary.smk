@@ -39,7 +39,7 @@ rule metaQUAST:
     message: "Run metaQUAST on the contigs: {wildcards.sample}"
     conda: "../envs/ENVS_quast.yaml"
     resources:
-        mem = 24,
+        mem = lambda wildcards, attempt: 24 + attempt * 24,
         cores = 8,
         metaquast = 1
     params:
