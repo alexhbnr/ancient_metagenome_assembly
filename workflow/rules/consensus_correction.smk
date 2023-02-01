@@ -47,7 +47,7 @@ if config['assembler'] == "megahit":
         message: "Determine regions with approx. equal coverage to have 100 chuncks: {wildcards.sample}"
         conda: "../envs/ENVS_freebayes.yaml"
         resources:
-            mem = lambda wildcards, attempt: 8 + attempt * 8,
+            mem = lambda wildcards, attempt: 16 + attempt * 16,
             cores = 1
         threads: 1
         shell:
