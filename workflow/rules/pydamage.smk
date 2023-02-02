@@ -45,6 +45,7 @@ if config['pydamage']:
             pipe("{tmpdir}/pydamage/{assembler}/{sample}.sorted.raw.sam")
         message: "Align the non-UDG reads back to the corrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
         conda: "../envs/ENVS_bowtie2.yaml"
+        group: "ref_alignment_pyd"
         resources:
             mem = 16,
             cores = 16
@@ -70,6 +71,7 @@ if config['pydamage']:
             bai = temp("{tmpdir}/pydamage/{assembler}/{sample}.sorted.pydamage.bam.bai")
         message: "Sort the non-UDG sequencing data: {wildcards.sample}"
         conda: "../envs/ENVS_samtools.yaml"
+        group: "ref_alignment_pyd"
         resources:
             mem = 8,
             cores = 2

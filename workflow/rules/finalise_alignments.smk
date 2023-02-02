@@ -6,6 +6,7 @@ rule samtools_sort_by_name:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.nsorted.bam")
     message: "Sort BAM file by name: {wildcards.sample}"
     conda: "../envs/ENVS_samtools.yaml"
+    group: "samtools_fixmate"
     resources:
         mem = 16,
         cores = 4
@@ -22,6 +23,7 @@ rule samtools_fixmate:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.fixmate.bam")
     message: "Apply samtools fixmate: {wildcards.sample}"
     conda: "../envs/ENVS_samtools.yaml"
+    group: "samtools_fixmate"
     resources:
         mem = 8,
         cores = 4
@@ -38,6 +40,7 @@ rule samtools_sort_by_coord:
         temp("{tmpdir}/alignment/{assembler}/{sample}.fixmate.sorted.bam")
     message: "Sort BAM file back to coordinates: {wildcards.sample}"
     conda: "../envs/ENVS_samtools.yaml"
+    group: "samtools_fixmate"
     resources:
         mem = 16,
         cores = 4

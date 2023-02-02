@@ -66,6 +66,7 @@ if config['assembler'] == "megahit":
             pipe("{tmpdir}/contig_correction/{sample}.vcf")
         message: "Genotype the contigs using freeBayes in parallel mode: {wildcards.sample}"
         conda: "../envs/ENVS_freebayes.yaml"
+        group: "freebayes"
         resources:
             mem = 32,
             cores = 16
@@ -83,6 +84,7 @@ if config['assembler'] == "megahit":
             "{tmpdir}/contig_correction/{sample}.vcf.gz"
         message: "Compress the VCF file produced by freebayes: {wildcards.sample}"
         conda: "../envs/ENVS_samtools.yaml"
+        group: "freebayes"
         resources:
             mem = 4,
             cores = 1

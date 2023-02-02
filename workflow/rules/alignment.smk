@@ -86,6 +86,7 @@ rule BowTie2_alignment:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.sorted.raw.sam")
     message: "Align reads back to the uncorrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
     conda: "../envs/ENVS_bowtie2.yaml"
+    group: "ref_alignment"
     resources:
         mem = 16,
         cores = 16
@@ -111,6 +112,7 @@ rule samtools_sort:
         bai = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai"
     message: "Sort the sequencing data: {wildcards.sample}"
     conda: "../envs/ENVS_samtools.yaml"
+    group: "ref_alignment"
     resources:
         mem = 8,
         cores = 2
