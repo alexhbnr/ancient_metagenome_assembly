@@ -13,7 +13,7 @@ def expected_busco_samples(wildcards):
     if "busco" in config['quality_evaluation']:
         dn = f"{os.path.dirname(checkpoints.metaWRAP_refinement.get(**wildcards).output[0])}/metawrap/BIN_REFINEMENT/{wildcards.sample}-{wildcards.assembler}/metawrap_50_10_bins"
         if len(glob(f"{dn}/*.fa")) > 0:
-            return [f"{config['resultdir']}/stats/busco/{wildcards.sample}-{wildcards.assembler}/{int(b.split('.')[1]):03d}"
+            return [f"{config['resultdir']}/stats/busco/{wildcards.sample}-{wildcards.assembler}/{int(os.path.basename(b).split('.')[1]):03d}"
                     for b in glob(f"{dn}/*.fa")]
         else:
             return []
