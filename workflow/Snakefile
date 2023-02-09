@@ -15,9 +15,10 @@ os.makedirs("snakemake_tmp", exist_ok=True)
 
 #### Parse sample table ########################################################
 sampletsv = pd.read_csv(config['sampletsv'], sep="\t", index_col=[0])
+sampletsv = pd.read_csv("/mnt/archgen/microbiome_paleobiotech/calcBGCecoevo/04-analysis/metagenome_assembly-Scorrano2022.tsv", sep="\t", index_col=[0])
 sampletsv.index = sampletsv.index.astype(str)
-sampletsv.loc[sampletsv['R0'].isnull(), 'R0'] = "NA"
-sampletsv.loc[sampletsv['nonUDG_R0'].isnull(), 'nonUDG_R0'] = "NA"
+for c in sampletsv.columns:
+    sampletsv.loc[sampletsv[c].isnull(), c] = "NA"
 SAMPLES = sampletsv.index.tolist()
 ################################################################################
 
