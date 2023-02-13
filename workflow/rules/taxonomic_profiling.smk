@@ -1,7 +1,7 @@
 def expected_bins(wildcards):
     if config['taxonomic_profiling']:
         return [f"{config['tmpdir']}/tax_profiling/bins/{wildcards.sample}-{wildcards.assembler}_{os.path.basename(fafn)}"
-                for s in SAMPLES
+                for s in successful_samples(wildcards)
                 for fafn in glob(f"{dn}/{s}-{config['assembler']}/metawrap_50_10_bins/*.fa")]
     else:
         return []
@@ -14,18 +14,19 @@ if config['taxonomic_profiling']:
 
     rule link_bin_fastas:
         input:
-            [f"{config['resultdir']}/binning/{sample}-{config['assembler']}_refinement.done" for sample in SAMPLES]
+            lambda wildcards: [f"{config['resultdir']}/binning/{sample}-{config['assembler']}_refinement.done" for sample in successful_samples(wildcards)]
         output:
             touch("{tmpdir}/tax_profiling/fas_linked")
         message: "Softlink the bins into a temporary directory"
         params:
-            outdir = "{tmpdir}/tax_profiling/bins"
+            outdir = "{tmpdir}/tax_profiling/bins",
+            samples = lambda wildcards: successful_samples(wildcards)
         run:
             os.makedirs(params.outdir, exist_ok=True)
             dn = f"{config['resultdir']}/binning/metawrap/BIN_REFINEMENT"
             if not dn.startswith("/"):
                 dn = f"{os.getcwd()}/{dn}"
-            for s in SAMPLES:
+            for s in params.samples:
                 for fafn in glob(f"{dn}/{s}-{config['assembler']}/metawrap_50_10_bins/*.fa"):
                     if not os.path.islink(f"{params.outdir}/{s}-{config['assembler']}_{os.path.basename(fafn)}"):
                         os.symlink(fafn, f"{params.outdir}/{s}-{config['assembler']}_{os.path.basename(fafn)}")

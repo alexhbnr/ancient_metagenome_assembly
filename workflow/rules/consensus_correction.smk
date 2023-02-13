@@ -1,6 +1,6 @@
 rule consensus_correction:
     input:
-        expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
+        lambda wildcards: expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
     output:
         touch(f"{config['tmpdir']}/consensus_correction.done")
 

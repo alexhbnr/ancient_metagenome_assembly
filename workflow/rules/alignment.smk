@@ -5,7 +5,7 @@ MINLENGTH = config['min_contiglength']
 
 rule alignment_workflow:
     input: 
-        expand("{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai", tmpdir=[config['tmpdir']], assembler=[config['assembler']], sample=SAMPLES)
+        lambda wildcards: expand("{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai", tmpdir=[config['tmpdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
     output:
         touch(f"{config['tmpdir']}/alignment.done")
 

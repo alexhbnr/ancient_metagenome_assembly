@@ -2,7 +2,7 @@ import pandas as pd
 
 rule rename_sort_contigs:
     input:
-        expand("{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
+        lambda wildcards: expand("{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
     output:
         touch(f"{config['tmpdir']}/rename_sort_contigs.done")
 

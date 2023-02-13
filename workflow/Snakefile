@@ -1,4 +1,5 @@
 from glob import glob
+import gzip
 import os
 from pathlib import Path
 import re
@@ -40,6 +41,12 @@ include: "rules/taxonomic_profiling.smk"
 
 #### Expected files ############################################################
 
+def successful_samples(wildcards):
+    with open(checkpoints.assembly_workflow.get(**wildcards).output[0], "rt") as f:
+        samples = [line.rstrip() for line in f]
+    return samples
+
+
 def expected_taxprofilers():
     taxprofilers = []
     if config['taxonomic_profiling']:
@@ -62,8 +69,8 @@ rule all:
 		f"{config['resultdir']}/summary_{config['projname']}.tsv",
         f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done",
         # TODO: summarise all bins for a project
-        expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']]),
-        expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=SAMPLES, assembler=[config['assembler']]),
+        lambda wildcards: expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
+        lambda wildcards: expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
         
 
 rule validate_sampletsv:
@@ -79,17 +86,17 @@ rule validate_sampletsv:
 
 rule summary:
     input:
-        consensus_correction = expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        dedup = expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        caln50 = expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        metaquast = expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        prokka = expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES),
-        pydamage = expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=SAMPLES)
+        consensus_correction = lambda wildcards: expand("{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        dedup = lambda wildcards: expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        caln50 = lambda wildcards: expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        metaquast = lambda wildcards: expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        prokka = lambda wildcards: expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        pydamage = lambda wildcards: expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
     output:
         "{resultdir}/summary_{projname}.tsv"
     message: "Create a summary file of the assembly process"
     params:
-        samples = SAMPLES,
+        samples = lambda wildcards: successful_samples(wildcards),
         assembler = config['assembler'],
         caln50_dir = "{resultdir}/stats/caln50",
         flagstat_dir = "{resultdir}/stats/flagstat",

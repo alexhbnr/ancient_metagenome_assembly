@@ -28,12 +28,20 @@ def path_to_corrected_r(wildcards, suffix):
 
 ################################################################################
 
-rule assembly_workflow:
+checkpoint assembly_workflow:
     input:
         f"{config['tmpdir']}/sampletsv.validated",
         expand("{tmpdir}/assembly/{sample}_{assembler}.done", tmpdir=[config['tmpdir']], sample=SAMPLES, assembler=[config['assembler']])
     output:
-        touch(f"{config['tmpdir']}/assembly.done")
+        f"{config['tmpdir']}/successful_samples.txt"
+    message: "Evaluate which samples were successfully assembled with at least one contig"
+    run:
+        with open(output[0], "wt") as outfile:
+            for s in SAMPLES:
+                with gzip.open(f"{config['resultdir']}/assembly/{s}-{config['assembler']}.fa.gz", "rt") as fastafile:
+                    line = fastafile.readline()
+                    if line.startswith(">"):
+                        outfile.write(s + "\n")
 
 #### Error correction with SPAdes-hammer ######################################
 
@@ -133,7 +141,7 @@ if config['assembler'] == "megahit":
                 --out-dir {params.prefix}
             """
 
-    rule cleanup_megahit:
+    checkpoint cleanup_megahit:
         input:
             "{tmpdir}/assembly/megahit/{sample}/final.contigs.fa"
         output:
@@ -194,7 +202,7 @@ elif config['assembler'] == "metaspades":
                 --only-assembler
             """
 
-    rule cleanup_metaspades:
+    checkpoint cleanup_metaspades:
         input:
             "{tmpdir}/assembly/metaspades/{sample}/contigs.fasta"
         output:
