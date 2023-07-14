@@ -14,6 +14,8 @@ metaspades_kmers: 21,33,55
 bowtie2_seed_nmismatches: 1
 # aDNA damage analysis
 pydamage: true  # perform aDNA damage analysis
+# Contig annotation with Prokka
+contig_annotation: true
 # MAG binning
 magbinning: true
 magbinning_type: "individual"  # metawrap as a wrapper or individual

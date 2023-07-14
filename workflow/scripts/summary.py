@@ -5,7 +5,7 @@ import re
 import pandas as pd
 
 # CalN50
-total_length = [] 
+total_length = []
 number_contigs = []
 nx_lx = []
 ## Process individual files
@@ -78,14 +78,17 @@ metaquast_df.columns = [f"nContigs_{size}bp"
 # Prokka
 prokka = []
 for s in snakemake.params.samples:
-    annotations = dict(line.rstrip().split(": ")
-                       for i, line in enumerate(gzip.open(f"{snakemake.params.prokka_dir}/{s}-{snakemake.params.assembler}.txt.gz", "rt"))
-                       if i > 0)
-    for k in ['CDS', 'gene', 'rRNA', 'tRNA', 'tmRNA']:
-        annotations.setdefault(k, 0)
-    prokka.append((s, int(annotations['CDS']), int(annotations['gene']),
-                   int(annotations['rRNA']), int(annotations['tRNA']),
-                   int(annotations['tmRNA'])))
+    if os.stat(f"{snakemake.params.prokka_dir}/{s}-{snakemake.params.assembler}.gff.gz").st_size > 50:
+        annotations = dict(line.rstrip().split(": ")
+                        for i, line in enumerate(gzip.open(f"{snakemake.params.prokka_dir}/{s}-{snakemake.params.assembler}.txt.gz", "rt"))
+                        if i > 0)
+        for k in ['CDS', 'gene', 'rRNA', 'tRNA', 'tmRNA']:
+            annotations.setdefault(k, 0)
+        prokka.append((s, int(annotations['CDS']), int(annotations['gene']),
+                    int(annotations['rRNA']), int(annotations['tRNA']),
+                    int(annotations['tmRNA'])))
+    else:
+        prokka.append((s, "NA", "NA", "NA", "NA", "NA"))
 prokka_df = pd.DataFrame(prokka, columns=['sample', 'CDS', 'genes', 'rRNA', 'tRNA', 'tmRNA'])
 
 # PyDamage
