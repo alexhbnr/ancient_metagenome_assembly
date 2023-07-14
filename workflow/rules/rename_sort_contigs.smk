@@ -72,9 +72,11 @@ elif config['assembler'] == "metaspades":
             "{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
         message: "Copy FastA file: {wildcards.sample}"
         conda: "../envs/ENVS_samtools.yaml"
+        params:
+            prefix = lambda wildcards: f"{os.getcwd()}/" if wildcards.resultdir[0] != "/" else "" 
         shell:
             """
-            ln -s ${{PWD}}/{input} {output}
+            ln -s {params.prefix}{input} {output}
             """
 
     rule link_bam:
@@ -89,8 +91,10 @@ elif config['assembler'] == "metaspades":
         resources:
             mem = 4,
             cores = 1
+        params:
+            prefix = lambda wildcards: f"{os.getcwd()}/" if wildcards.tmpdir[0] != "/" else "" 
         shell:
             """
-            ln -s ${{PWD}}/{input.bam} {output.bam}
-            ln -s ${{PWD}}/{input.bai} {output.bai}
+            ln -s {params.prefix}/{input.bam} {output.bam}
+            ln -s {params.prefix}/{input.bai} {output.bai}
             """
