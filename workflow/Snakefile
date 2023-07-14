@@ -10,6 +10,9 @@ from snakemake.utils import min_version
 
 min_version("7.0")
 
+os.environ["OPENBLAS_NUM_THREADS"] = '1'
+os.environ["OMP_NUM_THREADS"] = '1'
+
 configfile: "config/config.yaml"
 
 os.makedirs("snakemake_tmp", exist_ok=True)
