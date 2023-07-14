@@ -71,12 +71,13 @@ if config['taxonomic_profiling']:
                 "{resultdir}/stats/phylophlan3/phylophlan3_mash.tsv"
             message: "Assign the MAGs to a taxonomy based on MASH distances"
             resources:
-                mem = 40,
+                mem = lambda wildcards, attempt: 40 + attempt * 40,
                 cores = 32
             params:
                 dbdir = f"{config['resourcedir']}/phylophlan3",
                 db = "SGB.Dec20",
                 fadir = f"{config['tmpdir']}/tax_profiling/bins",
                 prefix = "{resultdir}/stats/phylophlan3/phylophlan"
+            threads: 32
             wrapper:
                 "file:///home/alexander_huebner/github/snakemake-wrappers/bio/phylophlan/metagenomic"
