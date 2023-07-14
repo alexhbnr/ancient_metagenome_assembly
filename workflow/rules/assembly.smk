@@ -28,6 +28,8 @@ def path_to_corrected_r(wildcards, suffix):
 
 ################################################################################
 
+localrules: assembly_workflow
+
 checkpoint assembly_workflow:
     input:
         f"{config['tmpdir']}/sampletsv.validated",
