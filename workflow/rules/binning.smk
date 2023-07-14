@@ -20,8 +20,8 @@ if config['magbinning']:
             temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam")
         message: "Sort BAM file according to FastA file: {wildcards.sample}"
         resources:
-            mem = 48,
-            mem_gb = 32
+            mem = lambda wildcards, attempt: 48 + attempt * 48,
+            mem_gb = lambda wildcards, attempt: 32 + attempt * 40,
         wrapper:
             "https://github.com/alexhbnr/snakemake-wrappers-public/raw/picard_reordersam/bio/picard/reordersam"
     
@@ -256,7 +256,7 @@ if config['magbinning']:
                     "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_args.txt"
                 message: "Bin the de-novo assembled contigs using CONCOCT: {wildcards.sample}"
                 resources:
-                    mem = 4
+                    mem = lambda wildcards, attempt: 8 + attempt * 8
                 params:
                     minlength = config['min_binninglength'],
                     outprefix = "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}"
