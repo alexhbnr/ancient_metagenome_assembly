@@ -1,5 +1,3 @@
-import pandas as pd
-
 rule rename_sort_contigs:
     input:
         lambda wildcards: expand("{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
@@ -16,14 +14,23 @@ if config['assembler'] == "megahit":
             temp("{tmpdir}/alignment/{assembler}/{sample}.avg_depth")
         message: "Infer mean coverage per contig: {wildcards.sample}"
         resources:
-            mem = lambda wildcards, attempt: 8 + attempt * 4,
+            mem = 4,
             cores = 1
         run:
-            pd.read_csv(input[0],
-                        sep="\t", header=None, names=['contig', 'pos', 'depth']) \
-                .groupby(['contig'])['depth'].agg('mean') \
-                .to_frame() \
-                .to_csv(output[0], sep="\t", index=True)
+            with open(output[0], "wt") as outfile:
+                outfile.write("contig\tdepth\n")
+                prev_contig = ""
+                depths = [] 
+                for line in open(input[0], "rt"):
+                    contig, pos, depth = line.rstrip().split()
+                    if prev_contig != "" and contig != prev_contig:
+                        avg_depth = sum(depths) / len(depths)
+                        outfile.write(f"{prev_contig}\t{avg_depth:.2f}\n")
+                        depths = []
+                    prev_contig = contig
+                    depths.append(int(depth))
+                avg_depth = sum(depths) / len(depths)
+                outfile.write(f"{contig}\t{avg_depth:.2f}\n")
 
     rule fix_contignames:
         input:
