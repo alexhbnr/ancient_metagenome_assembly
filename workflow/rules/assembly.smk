@@ -54,6 +54,7 @@ checkpoint error_correction:
         "{tmpdir}/error_correction/spadeshammer_{sample}/corrected/corrected.yaml"
     message: "Correct reads of sample {wildcards.sample} using SPAdes hammer"
     conda: "../envs/ENVS_metaSPAdes.yaml"
+    group: "spadeshammer"
     resources:
         mem = config['assembly_mem'],
         cores = 18
@@ -87,6 +88,7 @@ rule rename_spadeshammer_fastqs:
         pe1 = "{tmpdir}/error_correction/{sample}-wreadcorr_1.fastq.gz",
         pe2 = "{tmpdir}/error_correction/{sample}-wreadcorr_2.fastq.gz"
     message: "Rename the corrected FastQs: {wildcards.sample}"
+    group: "spadeshammer"
     params:
         singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
         pe1 = lambda wildcards: path_to_corrected_r(wildcards, 1),
