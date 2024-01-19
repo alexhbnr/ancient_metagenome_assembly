@@ -26,15 +26,15 @@ if len(snakemake.input.checkm) > 0:
             return pd.DataFrame(busco_counts, columns=['nBUSCOs', 'typeBUSCOs']) \
                 .assign(lineage=lineage,
                         binID=f"bin.{int(os.path.basename(os.path.dirname(fn)))}")
-
-    busco = pd.concat([parse_busco(fn)
-                       for b in snakemake.input.busco
-                       for fn in glob(f"{b}/short_summary.*")])
-    busco['nBUSCOs'] = busco['nBUSCOs'].astype(int)
-    busco = pd.pivot_table(busco, values="nBUSCOs", index=['binID', 'lineage'],
-                           columns=['typeBUSCOs'])
-    busco.columns = ['D', 'S', 'F', 'M', 'T']
-    busco = busco.reset_index()
+    if 'busco' in snakemake.config['quality_evaluation']:
+        busco = pd.concat([parse_busco(fn)
+                        for b in snakemake.input.busco
+                        for fn in glob(f"{b}/short_summary.*")])
+        busco['nBUSCOs'] = busco['nBUSCOs'].astype(int)
+        busco = pd.pivot_table(busco, values="nBUSCOs", index=['binID', 'lineage'],
+                            columns=['typeBUSCOs'])
+        busco.columns = ['D', 'S', 'F', 'M', 'T']
+        busco = busco.reset_index()
 
     # Merge
     ## checkM & GUNC following gunc checkm_merge
@@ -59,13 +59,23 @@ if len(snakemake.input.checkm) > 0:
                       'checkM.translation_table', 'checkM.completeness',
                       'checkM.contamination', 'checkM.strain_heterogeneity']
     ## BUSCO
-    busco_generic = busco.loc[busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])] \
-        .drop(['lineage'], axis=1)
-    busco_generic.columns = [f"BUSCO_generic.{v}" if i > 0 else v
-                             for i, v in enumerate(busco_generic.columns)]
-    busco_specific = busco.loc[~busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])]
-    busco_specific.columns = [f"BUSCO_specific.{v}" if i > 0 else v
-                              for i, v in enumerate(busco_specific.columns)]
+    if 'busco' in snakemake.config['quality_evaluation']:
+        busco_generic = busco.loc[busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])] \
+            .drop(['lineage'], axis=1)
+        busco_generic.columns = [f"BUSCO_generic.{v}" if i > 0 else v
+                                for i, v in enumerate(busco_generic.columns)]
+        busco_specific = busco.loc[~busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])]
+        busco_specific.columns = [f"BUSCO_specific.{v}" if i > 0 else v
+                                for i, v in enumerate(busco_specific.columns)]
+    else:
+        # Dummy BUSCO table
+        busco_generic = pd.DataFrame.from_dict({'binID': gunc['binID'].tolist()})
+        for c in ['D', 'S', 'F', 'M', 'T']:
+            busco_generic[f'BUSCO_generic.{c}'] = ""
+        busco_specific = pd.DataFrame.from_dict({'binID': gunc['binID'].tolist()})
+        busco_specific['lineage'] = ""
+        for c in ['D', 'S', 'F', 'M', 'T']:
+            busco_specific[f'BUSCO_specific.{c}'] = ""
 
     bin_summary = gunc.merge(checkm, how="left", on="binID") \
         .merge(busco_generic, how="left", on="binID") \
