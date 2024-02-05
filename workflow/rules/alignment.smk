@@ -53,12 +53,7 @@ rule build_BowTie2_index:
     input:
         "{tmpdir}/alignment/{assembler}/{sample}.raw.fasta"
     output:
-        index1 = temp("{tmpdir}/alignment/{assembler}/{sample}.1.bt2"),
-        index2 = temp("{tmpdir}/alignment/{assembler}/{sample}.2.bt2"),
-        index3 = temp("{tmpdir}/alignment/{assembler}/{sample}.3.bt2"),
-        index4 = temp("{tmpdir}/alignment/{assembler}/{sample}.4.bt2"),
-        rev_index1 = temp("{tmpdir}/alignment/{assembler}/{sample}.rev.1.bt2"),
-        rev_index2 = temp("{tmpdir}/alignment/{assembler}/{sample}.rev.2.bt2")
+        "{tmpdir}/alignment/{assembler}/{sample}.build_BowTie2_index.done"
     message: "Index the contigs for alignment using BowTie2: {wildcards.sample}"
     conda: "../envs/ENVS_bowtie2.yaml"
     resources:
@@ -71,17 +66,12 @@ rule build_BowTie2_index:
         """
         bowtie2-build -f \
             {input} \
-            {params.index}
+            {params.index} && touch {output}
         """
 
 rule BowTie2_alignment:
     input:
-        index1 = "{tmpdir}/alignment/{assembler}/{sample}.1.bt2",
-        index2 = "{tmpdir}/alignment/{assembler}/{sample}.2.bt2",
-        index3 = "{tmpdir}/alignment/{assembler}/{sample}.3.bt2",
-        index4 = "{tmpdir}/alignment/{assembler}/{sample}.4.bt2",
-        rev_index1 = "{tmpdir}/alignment/{assembler}/{sample}.rev.1.bt2",
-        rev_index2 = "{tmpdir}/alignment/{assembler}/{sample}.rev.2.bt2"
+        "{tmpdir}/alignment/{assembler}/{sample}.build_BowTie2_index.done"
     output:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.sorted.raw.sam")
     message: "Align reads back to the uncorrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
