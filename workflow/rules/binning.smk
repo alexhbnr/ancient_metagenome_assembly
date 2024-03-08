@@ -12,28 +12,51 @@ if config['magbinning']:
         wrapper:
             "v1.3.2/bio/picard/createsequencedictionary"
 
-    rule reorder_sam:
-        input:
-            bam = lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.sorted.dedup.bam",
-            seq_dict = "{tmpdir}/binning/{sample}-{assembler}.dict"
-        output:
-            temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam")
-        message: "Sort BAM file according to FastA file: {wildcards.sample}"
-        resources:
-            mem = lambda wildcards, attempt: 48 + attempt * 48,
-            mem_gb = lambda wildcards, attempt: 32 + attempt * 40,
-        wrapper:
-            "https://github.com/alexhbnr/snakemake-wrappers-public/raw/picard_reordersam/bio/picard/reordersam"
-    
-    rule index_reordered_bam:
-        input:
-            "{tmpdir}/binning/{sample}-{assembler}.reorder.bam"
-        output:
-            temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam.bai")
-        message: "Index reordered BAM file: {wildcards.sample}"
-        threads: 4
-        wrapper:
-            "v1.3.2/bio/samtools/index"
+    if config['assembler'] == "megahit":
+
+        rule reorder_sam:
+            input:
+                bam = lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.sorted.dedup.bam",
+                seq_dict = "{tmpdir}/binning/{sample}-{assembler}.dict"
+            output:
+                temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam")
+            message: "Sort BAM file according to FastA file: {wildcards.sample}"
+            resources:
+                mem = lambda wildcards, attempt: 48 + attempt * 48,
+                mem_gb = lambda wildcards, attempt: 32 + attempt * 40,
+            wrapper:
+                "https://github.com/alexhbnr/snakemake-wrappers-public/raw/picard_reordersam/bio/picard/reordersam"
+        
+        rule index_reordered_bam:
+            input:
+                "{tmpdir}/binning/{sample}-{assembler}.reorder.bam"
+            output:
+                temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam.bai")
+            message: "Index reordered BAM file: {wildcards.sample}"
+            threads: 4
+            wrapper:
+                "v1.3.2/bio/samtools/index"
+
+    elif config['assembler'] == "metaspades":
+
+        rule link_bam_binning:
+            input:
+                bam = lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.sorted.dedup.bam",
+                bai = lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.sorted.dedup.bam.bai"
+            output:
+                bam = temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam"),
+                bai = temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam.bai")
+            message: "Link BAM files for binning: {wildcards.sample}"
+            resources:
+                mem = 2,
+                cores = 1
+            params:
+                prefix = lambda wildcards: f"{os.getcwd()}" if not config['resultdir'].startswith("/") else ""
+            shell:
+                """
+                ln -s {params.prefix}/{input.bam} {output.bam}
+                ln -s {params.prefix}/{input.bai} {output.bai}
+                """
 
     if config['magbinning_type'] == "metawrap":
 
