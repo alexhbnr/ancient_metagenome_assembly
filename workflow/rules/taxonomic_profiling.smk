@@ -42,7 +42,7 @@ if config['taxonomic_profiling']:
                 url = "https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz",
                 resourcedir = config['resourcedir']
             wrapper:
-                "file:///home/alexander_huebner/github/snakemake-wrappers/bio/gtdbtk/download_db"
+                "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/gtdbtk/download_db"
 
         rule gtdbtk_classify:
             input:
@@ -60,7 +60,7 @@ if config['taxonomic_profiling']:
                 dbdir = f"{config['resourcedir']}/gtdbtk/gtdbtk_r207_v2"
             threads: 32
             wrapper:
-                "file:///home/alexander_huebner/github/snakemake-wrappers/bio/gtdbtk/classify_wf"
+                "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/gtdbtk/classify_wf"
 
     if "phylophlan3" in config['taxprofilers']:
 
@@ -80,4 +80,4 @@ if config['taxonomic_profiling']:
                 prefix = "{resultdir}/stats/phylophlan3/phylophlan"
             threads: 32
             wrapper:
-                "file:///home/alexander_huebner/github/snakemake-wrappers/bio/phylophlan/metagenomic"
+                "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/phylophlan/metagenomic"

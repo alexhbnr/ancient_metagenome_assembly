@@ -21,4 +21,4 @@ if config['magrefinement']:
                 concoct = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins"
             threads: 16
             wrapper:
-                "file:///home/alexander_huebner/github/snakemake-wrappers/bio/metawrap/bin_refinement"
+                "https://www.github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metawrap/bin_refinement"

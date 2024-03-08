@@ -106,7 +106,7 @@ if config['magbinning']:
             log: "{resultdir}/binning/metawrap/{sample}-{assembler}.binning.log"
             threads: 16
             wrapper:
-                "file:///home/alexander_huebner/github/snakemake-wrappers/bio/metawrap/binning"
+                "https://www.github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metawrap/binning"
 
     elif config['magbinning_type'] == "individual":
 
