@@ -119,7 +119,7 @@ rule samtools_depth:
     input:
         "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam"
     output:
-        pipe("{tmpdir}/alignment/{assembler}/{sample}.samtools_depth")
+        temp("{tmpdir}/alignment/{assembler}/{sample}.samtools_depth")
     message: "Determine the depth along the contigs with samtools: {wildcards.sample}"
     conda: "../envs/ENVS_samtools.yaml"
     resources:
