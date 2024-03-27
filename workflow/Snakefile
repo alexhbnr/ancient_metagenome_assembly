@@ -68,8 +68,8 @@ wildcard_constraints:
 localrules: validate_sampletsv
 
 rule all:
-	input:
-		f"{config['resultdir']}/summary_{config['projname']}.tsv",
+    input:
+        f"{config['resultdir']}/summary_{config['projname']}.tsv",
         f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done",
         # TODO: summarise all bins for a project
         lambda wildcards: expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
