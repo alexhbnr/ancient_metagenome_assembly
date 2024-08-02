@@ -194,7 +194,7 @@ elif config['assembler'] == "metaspades":
             outdir = "{tmpdir}/assembly/metaspades/{sample}",
             memory = config['assembly_mem'],
             kmers = config['metaspades_kmers'],
-        extra_params = config['metaspades_extra']
+            extra_params = config['metaspades_extra']
         threads: 24
         shell:
             """
