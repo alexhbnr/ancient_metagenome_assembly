@@ -65,7 +65,8 @@ checkpoint error_correction:
         fileprefix = lambda wildcards: os.path.basename(sampletsv.at[wildcards.sample, 'R1']).split("_")[0],
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
         memory = int(config['assembly_mem'] * 0.9),
-        outdir = "{tmpdir}/error_correction/spadeshammer_{sample}"
+        outdir = "{tmpdir}/error_correction/spadeshammer_{sample}",
+        extra = config['metaspades_extra']
     threads: 18
     shell:
         """
@@ -78,7 +79,8 @@ checkpoint error_correction:
             --tmp-dir {params.outdir}/tmp \
             --threads {threads} \
             --memory {params.memory} \
-            --only-error-correction
+            --only-error-correction \
+            {params.extra}
         """
 
 rule rename_spadeshammer_fastqs:
@@ -191,7 +193,8 @@ elif config['assembler'] == "metaspades":
             pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 's'),
             outdir = "{tmpdir}/assembly/metaspades/{sample}",
             memory = config['assembly_mem'],
-            kmers = config['metaspades_kmers']
+            kmers = config['metaspades_kmers'],
+        extra = config['metaspades_extra']
         threads: 24
         shell:
             """
@@ -203,7 +206,8 @@ elif config['assembler'] == "metaspades":
                 --threads {threads} \
                 --tmp-dir {params.outdir}/tmp \
                 --memory {params.memory} \
-                --only-assembler
+                --only-assembler \
+                {params.extra}
             """
 
     checkpoint cleanup_metaspades:
