@@ -118,6 +118,9 @@ if snakemake.params.pydamage:
         .fillna(0)
     df['length'] = df['length'].astype(int)
     df.iloc[:,3:8] = df.iloc[:,3:8].astype(int)
+    for c in df.columns:
+        if c.startswith("N"):
+            df[c] = df[c].astype(int)
     df['PyDamage_nReads_contig'] = df['PyDamage_nReads_contig'].astype(int)
     df['PyDamage_contiglength'] = df['PyDamage_contiglength'].astype(int)
 else:
@@ -129,5 +132,8 @@ else:
         .fillna(0)
     df['length'] = df['length'].astype(int)
     df.iloc[:,3:8] = df.iloc[:,3:8].astype(int)
+    for c in df.columns:
+        if c.startswith("N"):
+            df[c] = df[c].astype(int)
 
 df.to_csv(snakemake.output[0], sep="\t", index=False)
