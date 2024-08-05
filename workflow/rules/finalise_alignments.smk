@@ -60,11 +60,13 @@ rule samtools_markup:
     resources:
         mem = 16,
         cores = 4
+    params:
+        remove_dup = lambda wildcards: "" if config['keep_duplicated_reads'] else "-r"
     threads: 4
     log: "{resultdir}/stats/markdup/{sample}-{assembler}_samtoolsmarkdup.log"
     shell:
         """
-        samtools markdup -r -s -@ {threads} {input.bam} {output} 2> {log}
+        samtools markdup {params.remove_dup} -s -@ {threads} {input.bam} {output} 2> {log}
         """
 
 rule samtools_flagstat:

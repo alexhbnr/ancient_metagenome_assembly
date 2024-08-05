@@ -13,6 +13,7 @@ metaspades_kmers: 21,33,55
 metaspades_extra: ""
 # Alignment
 bowtie2_seed_nmismatches: 1
+keep_duplicated_reads: true
 # aDNA damage analysis
 pydamage: true  # perform aDNA damage analysis
 # Contig annotation with Prokka
@@ -36,3 +37,4 @@ reference_database: ""  # path to FastA file with reference sequences
 # Taxonomic profiling
 taxonomic_profiling: true
 taxprofilers: ['phylophlan3', 'gtdbtk', 'kraken2']
+gtdb_version: 'r207_v2'  # 'r220.0', 'r214.1'
