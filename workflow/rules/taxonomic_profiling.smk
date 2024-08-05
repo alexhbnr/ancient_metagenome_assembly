@@ -36,17 +36,21 @@ if config['taxonomic_profiling']:
 
         rule gtdbtk_download_db:
             output:
-                "{resourcedir}/gtdbtk/gtdbtk_r207_v2/metadata/metadata.txt"
+                f"{config['resourcedir']}/gtdbtk/gtdbtk_{config['gtdb_version']}/metadata/metadata.txt"
             message: "Download and set-up the GTDBTK database"
+            container: "docker://quay.io/biocontainers/gtdbtk:2.3.2--pyhdfd78af_0"
             params:
-                url = "https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz",
-                resourcedir = config['resourcedir']
+                url = {'r207_v2': "https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz",
+                       'r214.1': "https://data.gtdb.ecogenomic.org/releases/release214/214.1/auxillary_files/gtdbtk_r214_data.tar.gz",
+                       'r220.0': "https://data.gtdb.ecogenomic.org/releases/release220/220.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r220_data.tar.gz",
+                       }[config['gtdb_version']],
+                resourcesdir = config['resourcedir']
             wrapper:
                 "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/gtdbtk/download_db"
 
         rule gtdbtk_classify:
             input:
-                db = f"{config['resourcedir']}/gtdbtk/gtdbtk_r207_v2/metadata/metadata.txt",
+                db = f"{config['resourcedir']}/gtdbtk/gtdbtk_{config['gtdb_version']}/metadata/metadata.txt",
                 fas = f"{config['tmpdir']}/tax_profiling/fas_linked"
             output:
                 "{resultdir}/stats/gtdbtk/gtdbtk.bac120.summary.tsv"
@@ -57,7 +61,7 @@ if config['taxonomic_profiling']:
             params:
                 fadir = f"{config['tmpdir']}/tax_profiling/bins",
                 outdir = "{resultdir}/stats/gtdbtk",
-                dbdir = f"{config['resourcedir']}/gtdbtk/gtdbtk_r207_v2"
+                dbdir = f"{config['resourcedir']}/gtdbtk/gtdbtk_{config['gtdb_version']}"
             threads: 32
             wrapper:
                 "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/gtdbtk/classify_wf"
