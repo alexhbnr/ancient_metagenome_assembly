@@ -44,7 +44,7 @@ if config['taxonomic_profiling']:
                        'r214.1': "https://data.gtdb.ecogenomic.org/releases/release214/214.1/auxillary_files/gtdbtk_r214_data.tar.gz",
                        'r220.0': "https://data.gtdb.ecogenomic.org/releases/release220/220.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r220_data.tar.gz",
                        }[config['gtdb_version']],
-                resourcesdir = config['resourcedir']
+                resourcedir = config['resourcedir']
             wrapper:
                 "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/gtdbtk/download_db"
 
