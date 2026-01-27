@@ -1,5 +1,11 @@
 if config['magrefinement']:
 
+    rule refinement_workflow:
+        input: 
+            lambda wildcards: expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
+        output:
+            touch(f"{config['tmpdir']}/refinement.done")
+
     if config['magrefiner'] == "metawrap":
     
         checkpoint metaWRAP_refinement:
