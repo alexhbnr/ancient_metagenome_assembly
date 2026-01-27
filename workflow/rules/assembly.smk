@@ -99,8 +99,8 @@ rule rename_spadeshammer_fastqs:
         output_pe0 = "{tmpdir}/error_correction/{sample}-wreadcorr_0.fastq.gz"
     shell:
         """
-        mv {params.pe1} {output.pe1}
-        mv {params.pe2} {output.pe2}
+        ln -s {params.pe1} {output.pe1}
+        ln -s {params.pe2} {output.pe2}
         if [[ "{params.singleend_data}" = "True" ]]; then
             cat {params.pe0} > {params.output_pe0}
         fi
@@ -129,13 +129,16 @@ if config['assembler'] == "megahit":
             pe0 = lambda wildcards: path_to_r(wildcards.sample, wildcards.tmpdir, "R0", 'r'),
             memory = f"{int(config['assembly_mem'] / 2)}00000000",
             prefix = "{tmpdir}/assembly/megahit/{sample}",
-            tmpdir = "tmp",
+            tmpdir = "{tmpdir}/tmp",
             minlength = lambda wildcards: config['min_contiglength']
         threads: 24
         shell:
             """
             if [[ -d {params.prefix} ]]; then
                 rm -r {params.prefix}
+            fi
+            if [[ ! -d {params.tmpdir} ]]; then
+                mkdir -p {params.tmpdir}
             fi
             megahit \
                 -t {threads} \
