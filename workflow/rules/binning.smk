@@ -1,5 +1,11 @@
 if config['magbinning']:
 
+    rule binning_workflow:
+        input: 
+            lambda wildcards: expand("{resultdir}/binning/{sample}-{assembler}_binning.done", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
+        output:
+            touch(f"{config['tmpdir']}/binning.done")
+
     rule create_sequence_dict:
         input:
             lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}.fasta.gz"
