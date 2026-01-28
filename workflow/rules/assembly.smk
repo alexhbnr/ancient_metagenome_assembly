@@ -57,6 +57,9 @@ checkpoint error_correction:
     group: "spadeshammer"
     resources:
         mem = config['assembly_mem'],
+        mem_mb = int(config['assembly_mem']) * 1000,
+        runtime = 5760,
+        slurm_partition = "standard",
         cores = 18
     params: 
         pe1 = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'],
@@ -91,6 +94,12 @@ rule rename_spadeshammer_fastqs:
         pe2 = "{tmpdir}/error_correction/{sample}-wreadcorr_2.fastq.gz"
     message: "Rename the corrected FastQs: {wildcards.sample}"
     group: "spadeshammer"
+    resources:
+        mem = 2,
+        mem_mb = 2000,
+        runtime = 1440,
+        slurm_partition = "standard",
+        cores = 4
     params:
         singleend_data = lambda wildcards: sampletsv.at[wildcards.sample, 'R0'] != "NA",
         pe1 = lambda wildcards: path_to_corrected_r(wildcards, 1),
@@ -121,6 +130,9 @@ if config['assembler'] == "megahit":
         conda: "../envs/ENVS_MEGAHIT.yaml"
         resources:
             mem = lambda wildcards: int(config['assembly_mem'] / 2),
+            mem_mb = lambda_wildcards: int(config['assembly_mem'] / 2) * 1000,
+            runtime = 2880,
+            slurm_partition = "standard",
             cores = 24,
             assembly = 1
         params: 
@@ -159,6 +171,9 @@ if config['assembler'] == "megahit":
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 120,
+            slurm_partition = "short",
             cores = 4
         params:
             dir = "{tmpdir}/assembly/megahit/{sample}",
@@ -188,6 +203,9 @@ elif config['assembler'] == "metaspades":
         conda: "../envs/ENVS_metaSPAdes.yaml"
         resources:
             mem = config['assembly_mem'],
+            mem_mb = int(config['assembly_mem']) * 1000,
+            runtime = 5760,
+            slurm_partition = "standard",
             cores = 24,
             assembly = 1
         params: 
@@ -222,6 +240,9 @@ elif config['assembler'] == "metaspades":
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 120,
+            slurm_partition = "short",
             cores = 4
         params:
             dir = "{tmpdir}/assembly/metaspades/{sample}",

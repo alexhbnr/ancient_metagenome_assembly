@@ -21,6 +21,9 @@ rule caln50:
     conda: "../envs/ENVS_minimap2.yaml"
     resources:
         mem = 4,
+        mem_mb = 4000,
+        runtime = 120,
+        slurm_partition = "short",
         cores = 1
     shell:
         """
@@ -40,6 +43,9 @@ rule metaQUAST:
     conda: "../envs/ENVS_quast.yaml"
     resources:
         mem = lambda wildcards, attempt: 24 + attempt * 24,
+        mem_mb = lambda wildcards, attempt: 24000 + attempt * 24000,
+        runtime = 1400,
+        slurm_partition = "standard",
         cores = 8,
         metaquast = 1
     params:

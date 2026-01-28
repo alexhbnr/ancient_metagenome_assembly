@@ -47,6 +47,8 @@ rule quality_evaluation:
 
 if "checkm" in config['quality_evaluation']:
 
+    localrules: checkM_prepareDatabase, checkM_setRoot
+
     rule checkM_prepareDatabase:
         output:
             f"{config['resourcedir']}/checkM/.dmanifest"
@@ -77,6 +79,9 @@ if "checkm" in config['quality_evaluation']:
         message: "Run checkM using lineage-specific workflow on sample {wildcards.sample}"
         resources:
             mem = 80,
+            mem_mb = 80000,
+            runtime = 1440,
+            slurm_partition = "standard",
             cores = 8
         params:
             fadir = lambda wildcards: f"{config['resultdir']}/binning/metawrap/BIN_REFINEMENT/{wildcards.sample}-{wildcards.assembler}/metawrap_50_10_bins",
@@ -94,6 +99,9 @@ if "checkm" in config['quality_evaluation']:
         message: "Generate extended checkM report for sample {wildcards.sample}"
         resources:
             mem = 20,
+            mem_mb = 20000,
+            runtime = 1440,
+            slurm_partition = "standard",
             cores = 1
         params:
             outputfd = lambda wildcards: f"{config['tmpdir']}/checkM/{wildcards.sample}-{wildcards.assembler}"
@@ -112,6 +120,9 @@ if "busco" in config['quality_evaluation']:
         message: "Run BUSCO on the contigs: {wildcards.sample}"
         resources:
             mem = 36,
+            mem_mb = 36000,
+            runtime = 1440,
+            slurm_partition = "standard",
             cores = 8
         params:
             mode = "genome",
@@ -127,6 +138,11 @@ if "gunc" in config['quality_evaluation']:
         output:
             directory("{resourcedir}/GUNC/db")
         message: "Install GUNC database"
+        resources:
+            mem = 8,
+            mem_mb = 8000,
+            runtime = 1440,
+            slurm_partition = "standard",
         params:
             dir = "{resourcedir}/GUNC/db"
         wrapper:
@@ -141,6 +157,9 @@ if "gunc" in config['quality_evaluation']:
         message: "Run GUNC on bins: {wildcards.sample}"
         resources:
             mem = 32,
+            mem_mb = 32000,
+            runtime = 1440,
+            slurm_partition = "standard",
             cores = 8
         params:
             db_file = lambda wildcards: f"{config['resourcedir']}/GUNC/db/gunc_db_progenomes2.1.dmnd",

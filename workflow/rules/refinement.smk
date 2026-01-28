@@ -17,6 +17,9 @@ if config['magrefinement']:
             message: "Running the metaWRAP bin refinement module on {wildcards.sample}"
             resources:
                 mem = 80,
+                mem_mb = 80000,
+                runtime = 2880,
+                slurm_partition = "standard",
                 cores = 16
             params:
                 outdir = "{resultdir}/binning/metawrap/BIN_REFINEMENT/{sample}-{assembler}",

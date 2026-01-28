@@ -1,5 +1,7 @@
 if config['magbinning']:
 
+localrules: link_bam_binning, format_maxbin2_depth, decompress_fasta_maxbin2, decompress_fasta_concot
+
     rule binning_workflow:
         input: 
             lambda wildcards: expand("{resultdir}/binning/{sample}-{assembler}_binning.done", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
@@ -14,7 +16,10 @@ if config['magbinning']:
         message: "Create sequence dictionary to reorder the BAM file: {wildcards.sample}"
         resources:
             mem = 8,
-            mem_gb = 4
+            mem_gb = 4,
+            mem_mb = 8000,
+            runtime = 120,
+            slurm_partition = "short"
         wrapper:
             "v1.3.2/bio/picard/createsequencedictionary"
 
@@ -30,6 +35,9 @@ if config['magbinning']:
             resources:
                 mem = lambda wildcards, attempt: 48 + attempt * 48,
                 mem_gb = lambda wildcards, attempt: 32 + attempt * 40,
+                mem_mb = lambda wildcards, attempt: 48000 + attempt + 48000,
+                runtime = 1440,
+                slurm_partition = "standard"
             wrapper:
                 "https://github.com/alexhbnr/snakemake-wrappers-public/raw/picard_reordersam/bio/picard/reordersam"
         
@@ -39,6 +47,11 @@ if config['magbinning']:
             output:
                 temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam.bai")
             message: "Index reordered BAM file: {wildcards.sample}"
+            resources:
+                mem = 8,
+                mem_mb = 8000,
+                runtime = 120,
+                slurm_partition = "short"
             threads: 4
             wrapper:
                 "v1.3.2/bio/samtools/index"
@@ -53,9 +66,6 @@ if config['magbinning']:
                 bam = temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam"),
                 bai = temp("{tmpdir}/binning/{sample}-{assembler}.reorder.bam.bai")
             message: "Link BAM files for binning: {wildcards.sample}"
-            resources:
-                mem = 2,
-                cores = 1
             params:
                 prefix = lambda wildcards: f"{os.getcwd()}" if not config['resultdir'].startswith("/") else ""
             shell:
@@ -79,6 +89,10 @@ if config['magbinning']:
                 fq2 = temp("{resultdir}/binning/metawrap/faux_reads/{sample}-{assembler}_2.fastq")
             message: "Moving BAM files and creating false fq files to trick the metaWRAP binning module"
             resources:
+                mem = 4,
+                mem_mb = 4000,
+                runtime = 120,
+                slurm_partition = "short",
                 cores = 1
             params:
                 prefix = lambda wildcards: f"{os.getcwd()}" if not config['resultdir'].startswith("/") else ""
@@ -105,6 +119,9 @@ if config['magbinning']:
             message: "Running the metaWRAP binning module on {wildcards.sample}"
             resources:
                 mem = 60,
+                mem_mb = 60000,
+                runtime = 2880,
+                slurm_partition = "standard",
                 cores = 16
             params:
                 outdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}",
@@ -125,7 +142,10 @@ if config['magbinning']:
                     "{tmpdir}/binning/metabat2/{sample}-{assembler}.depth"
                 message: "Determine the average depth of the contigs for metaBAT2: {wildcards.sample}"
                 resources:
-                    mem = 8
+                    mem = 8,
+                    mem_mb = 8000,
+                    runtime = 1440,
+                    slurm_partition = "standard"
                 params:
                     minlength = config['min_binninglength']
                 wrapper:
@@ -139,7 +159,10 @@ if config['magbinning']:
                     "{tmpdir}/binning/metabat2/{sample}-{assembler}.unbinned.fa"
                 message: "Bin the de-novo assembled contigs using metaBAT2: {wildcards.sample}"
                 resources:
-                    mem = 24
+                    mem = 24,
+                    mem_mb = 24000,
+                    runtime = 2880,
+                    slurm_partition = "standard"
                 params:
                     minlength = lambda wildcards: config['min_binninglength'] if config['min_binninglength'] > 1500 else 1500,
                     outprefix = "{tmpdir}/binning/metabat2/{sample}-{assembler}"
@@ -154,7 +177,10 @@ if config['magbinning']:
                     "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/metabat2_bins/bin.unbinned.fa"
                 message: "Copy bins into the folder structure expected by MetaWRAP: {wildcards.sample}"
                 resources:
-                    mem = 2
+                    mem = 2,
+                    mem_mb = 2000,
+                    runtime = 120,
+                    slurm_partition = "short"
                 params:
                     metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/metabat2_bins"
                 run:
@@ -171,7 +197,10 @@ if config['magbinning']:
                     temp("{tmpdir}/binning/maxbin2/{sample}-{assembler}.metabat2_depth")
                 message: "Determine the average depth of the contigs for MaxBin2: {wildcards.sample}"
                 resources:
-                    mem = 8
+                    mem = 8,
+                    mem_mb = 8000,
+                    runtime = 1440,
+                    slurm_partition = "standard"
                 params:
                     minlength = config['min_binninglength']
                 wrapper:
@@ -208,7 +237,10 @@ if config['magbinning']:
                     "{tmpdir}/binning/maxbin2/{sample}-{assembler}.noclass"
                 message: "Bin the de-novo assembled contigs using MaxBin2: {wildcards.sample}"
                 resources:
-                    mem = 16
+                    mem = 16,
+                    mem_mb = 16000,
+                    runtime = 2880,
+                    slurm_partition = "standard"
                 params:
                     minlength = config['min_binninglength'],
                     markerset = lambda wildcards: config['maxbin2_markerset'],
@@ -224,7 +256,10 @@ if config['magbinning']:
                     "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/maxbin2_bins/{sample}-{assembler}.summary"
                 message: "Copy bins into the folder structure expected by MetaWRAP: {wildcards.sample}"
                 resources:
-                    mem = 2
+                    mem = 2,
+                    mem_mb = 2000,
+                    runtime = 120,
+                    slurm_partition = "short"
                 params:
                     metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/maxbin2_bins"
                 run:
@@ -260,7 +295,10 @@ if config['magbinning']:
                     bed = temp("{tmpdir}/binning/concoct/{sample}-{assembler}_10K.bed")
                 message: "Split the contigs into chunks of max. 10 kb: {wildcards.sample}"
                 resources:
-                    mem = 4
+                    mem = 4,
+                    mem_mb = 4000,
+                    runtime = 120,
+                    slurm_partition = "short"
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/split_contigs"
 
@@ -273,7 +311,10 @@ if config['magbinning']:
                     "{tmpdir}/binning/concoct/{sample}-{assembler}.depth"
                 message: "Calculate the depth along the contigs: {wildcards.sample}"
                 resources:
-                    mem = 4
+                    mem = 4,
+                    mem_mb = 4000,
+                    runtime = 1440,
+                    slurm_partition = "standard"
                 wrapper:
                     "https://github.com/alexhbnr/snakemake-wrappers/raw/main/bio/concoct/coverage_table"
 
@@ -285,7 +326,10 @@ if config['magbinning']:
                     "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_args.txt"
                 message: "Bin the de-novo assembled contigs using CONCOCT: {wildcards.sample}"
                 resources:
-                    mem = lambda wildcards, attempt: 8 + attempt * 8
+                    mem = lambda wildcards, attempt: 8 + attempt * 8,
+                    mem_mb = lambda wildcards, attempt: 8000 + attempt * 8000,
+                    runtime = 2880,
+                    slurm_partition = "standard"
                 params:
                     minlength = config['min_binninglength'],
                     outprefix = "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}"
@@ -300,7 +344,10 @@ if config['magbinning']:
                     "{tmpdir}/binning/concoct/{sample}-{assembler}/{sample}-{assembler}_clustering.csv"
                 message: "Merge the split contigs: {wildcards.sample}"
                 resources:
-                    mem = 4
+                    mem = 4,
+                    mem_mb = 4000,
+                    runtime = 120,
+                    slurm_partition = "short"
                 params:
                     clustering = lambda wildcards: f"{wildcards.tmpdir}/binning/concoct/{wildcards.sample}-{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}_clustering_gt{config['min_binninglength']}.csv"
                 wrapper:
@@ -314,7 +361,10 @@ if config['magbinning']:
                     "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins/{sample}-{assembler}.clustering.csv"
                 message: "Copy CONCOCT bins into the folder structure expected by MetaWRAP: {wildcards.sample}"
                 resources:
-                    mem = 2
+                    mem = 2,
+                    mem_mb = 2000,
+                    runtime = 120,
+                    slurm_partition = "short"
                 params:
                     metawrapdir = "{resultdir}/binning/metawrap/INITIAL_BINNING/{sample}-{assembler}/concoct_bins",
                     min_contiglength = config['min_binninglength']

@@ -1,5 +1,3 @@
-import pandas as pd
-
 def path_to_nonudg_r0(sample, tmpdir):
     if sampletsv.at[sample, 'nonUDG_R0'] == "NA":  # no single-end data
         return ""
@@ -22,6 +20,9 @@ if config['pydamage']:
         conda: "../envs/ENVS_bowtie2.yaml"
         resources:
             mem = 8,
+            mem_mb = 8000,
+            runtime = 1440,
+            slurm_partition = "standard",
             cores = 4
         params:
             index = "{tmpdir}/pydamage/{assembler}/{sample}"
@@ -48,6 +49,9 @@ if config['pydamage']:
         group: "ref_alignment_pyd"
         resources:
             mem = 16,
+            mem_mb = 16000,
+            runtime = 2880,
+            slurm_partition = "standard",
             cores = 16
         params:
             index = "{tmpdir}/pydamage/{assembler}/{sample}",
@@ -74,6 +78,9 @@ if config['pydamage']:
         group: "ref_alignment_pyd"
         resources:
             mem = 8,
+            mem_mb = 8000,
+            runtime = 1440,
+            slurm_partition = "standard",
             cores = 2
         threads: 2
         shell:
@@ -94,6 +101,9 @@ if config['pydamage']:
         conda: "../envs/ENVS_pydamage.yaml"
         resources:
             mem = 12,
+            mem_mb = 12000,
+            runtime = 20160,
+            slurm_partition = "standard",
             cores = 8
         params:
             outputprefix = "{resultdir}/pydamage/{sample}-{assembler}.pydamage",
@@ -122,6 +132,3 @@ else:
             """
             touch {output}
             """
-
-        
-

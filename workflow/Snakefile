@@ -65,7 +65,7 @@ wildcard_constraints:
     assembler = "(megahit|metaspades)",
     sample = config['wildcard_constraint_samples']
 
-localrules: validate_sampletsv
+localrules: validate_sampletsv, summary, rename_taxprofilers
 
 rule all:
     input:
