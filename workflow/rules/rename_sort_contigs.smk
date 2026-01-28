@@ -15,6 +15,9 @@ if config['assembler'] == "megahit":
         message: "Infer mean coverage per contig: {wildcards.sample}"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 240,
+            slurm_partition = "short",
             cores = 1
         run:
             with open(output[0], "wt") as outfile:
@@ -43,6 +46,9 @@ if config['assembler'] == "megahit":
         conda: "../envs/ENVS_Python.yaml"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 240,
+            slurm_partition = "short",
             cores = 1
         params:
             header = lambda wildcards: f"{config['tmpdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.header"
@@ -61,6 +67,9 @@ if config['assembler'] == "megahit":
         conda: "../envs/ENVS_samtools.yaml"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 240,
+            slurm_partition = "short",
             cores = 1
         params:
             header = "{tmpdir}/alignment/{assembler}/{sample}.header"
@@ -71,6 +80,8 @@ if config['assembler'] == "megahit":
             """
 
 elif config['assembler'] == "metaspades":
+
+    localrules: copy_fasta, link_bam
 
     rule copy_fasta:
         input:
@@ -95,9 +106,6 @@ elif config['assembler'] == "metaspades":
             bam = temp("{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam"),
             bai = temp("{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam.bai"),
         message: "Link the sorted BAMs and copy the FastA with the metaSPAdes contigs: {wildcards.sample}" 
-        resources:
-            mem = 4,
-            cores = 1
         params:
             prefix = lambda wildcards: f"{os.getcwd()}/" if wildcards.tmpdir[0] != "/" else "" 
         shell:

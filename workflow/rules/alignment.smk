@@ -20,6 +20,9 @@ if config['assembler'] == "metaspades":
         conda: "../envs/ENVS_bioawk.yaml"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 120,
+            slurm_partition = "short",
             cores = 1
         params:
             fasta = lambda wildcards: f"{config['resultdir']}/assembly/{wildcards.sample}-metaspades.fa.gz"
@@ -40,6 +43,9 @@ elif config['assembler'] == "megahit":
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
             mem = 4,
+            mem_mb = 4000,
+            runtime = 120,
+            slurm_partition = "short",
             cores = 1
         params:
             fasta = lambda wildcards: f"{config['resultdir']}/assembly/{wildcards.sample}-megahit.fa.gz"
@@ -58,6 +64,9 @@ rule build_BowTie2_index:
     conda: "../envs/ENVS_bowtie2.yaml"
     resources:
         mem = 8,
+        mem_mb = 8000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 4
     params:
         index = "{tmpdir}/alignment/{assembler}/{sample}"
@@ -79,6 +88,9 @@ rule BowTie2_alignment:
     group: "ref_alignment"
     resources:
         mem = 16,
+        mem_mb = 16000,
+        runtime = 2880,
+        slurm_partition = "standard",
         cores = 16
     params:
         index = "{tmpdir}/alignment/{assembler}/{sample}",
@@ -105,6 +117,9 @@ rule samtools_sort:
     group: "ref_alignment"
     resources:
         mem = 8,
+        mem_mb = 8000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 2
     threads: 2
     shell:
@@ -124,6 +139,9 @@ rule samtools_depth:
     conda: "../envs/ENVS_samtools.yaml"
     resources:
         mem = 8,
+        mem_mb = 8000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 1
     shell:
         """

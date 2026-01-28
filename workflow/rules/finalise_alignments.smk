@@ -9,6 +9,9 @@ rule samtools_sort_by_name:
     group: "samtools_fixmate"
     resources:
         mem = 16,
+        mem_mb = 16000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 4
     threads: 4
     shell:
@@ -26,6 +29,9 @@ rule samtools_fixmate:
     group: "samtools_fixmate"
     resources:
         mem = 8,
+        mem_mb = 8000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 4
     threads: 4
     shell:
@@ -43,6 +49,9 @@ rule samtools_sort_by_coord:
     group: "samtools_fixmate"
     resources:
         mem = 16,
+        mem_mb = 16000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 4
     threads: 4
     shell:
@@ -59,6 +68,9 @@ rule samtools_markup:
     conda: "../envs/ENVS_samtools.yaml"
     resources:
         mem = 16,
+        mem_mb = 16000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 4
     params:
         remove_dup = lambda wildcards: "" if config['keep_duplicated_reads'] else "-r"
@@ -78,6 +90,9 @@ rule samtools_flagstat:
     conda: "../envs/ENVS_samtools.yaml"
     resources:
         mem = 4,
+        mem_mb = 4000,
+        runtime = 1440,
+        slurm_partition = "standard",
         cores = 1
     threads: 1
     shell:
@@ -95,6 +110,9 @@ rule samtools_index:
     conda: "../envs/ENVS_samtools.yaml"
     resources:
         mem = 4,
+        mem_mb = 4000,
+        runtime = 240,
+        slurm_partition = "short",
         cores = 1
     shell:
         """

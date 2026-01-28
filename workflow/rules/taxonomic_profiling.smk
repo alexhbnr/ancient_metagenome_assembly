@@ -12,6 +12,8 @@ wildcard_constraints:
 
 if config['taxonomic_profiling']:
 
+    localrules: link_bin_fastas
+
     rule link_bin_fastas:
         input:
             lambda wildcards: [f"{config['resultdir']}/binning/{sample}-{config['assembler']}_refinement.done" for sample in successful_samples(wildcards)]
@@ -33,6 +35,8 @@ if config['taxonomic_profiling']:
             Path(output[0]).touch()
 
     if "gtdbtk" in config['taxprofilers']:
+
+        localrules: gtdbtk_download_db
 
         rule gtdbtk_download_db:
             output:
@@ -56,6 +60,9 @@ if config['taxonomic_profiling']:
                 "{resultdir}/stats/gtdbtk/gtdbtk.bac120.summary.tsv"
             message: "Run the GTDBTK's classify workflow"
             resources:
+                mem_mb = 80000,
+                runtime = 1440,
+                slurm_partition = "standard",
                 mem = 80,
                 cores = 32
             params:
@@ -76,6 +83,9 @@ if config['taxonomic_profiling']:
             message: "Assign the MAGs to a taxonomy based on MASH distances"
             resources:
                 mem = lambda wildcards, attempt: 40 + attempt * 40,
+                mem_mb = lambda wildcards, attempt: 40000 + attempt * 40000,
+                slurm_partition = "standard",
+                mem = 80,
                 cores = 32
             params:
                 dbdir = f"{config['resourcedir']}/phylophlan3",

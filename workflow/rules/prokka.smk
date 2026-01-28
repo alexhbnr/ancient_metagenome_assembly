@@ -9,6 +9,9 @@ if config['contig_annotation']:
         conda: "../envs/ENVS_prokka.yaml"
         resources:
             mem = 16,
+            mem_mb = 16000,
+            runtime = 20160,
+            slurm_partition = "standard",
             cores = 8
         params:
             tmpdir = lambda wildcards: f"{config['tmpdir']}/prokka_{wildcards.sample}_{wildcards.assembler}",
