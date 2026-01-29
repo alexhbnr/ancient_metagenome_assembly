@@ -17,7 +17,7 @@ if config['assembler'] == "megahit":
             mem = 4,
             mem_mb = 4000,
             runtime = 120,
-            slurm_partition = "short"
+            slurm_partition = "short",
             cores = 2
         params:
             fasta = lambda wildcards: f"{config['resultdir']}/assembly/{wildcards.sample}-megahit.fa.gz"
@@ -37,7 +37,7 @@ if config['assembler'] == "megahit":
             mem = 4,
             mem_mb = 4000,
             runtime = 120,
-            slurm_partition = "short"
+            slurm_partition = "short",
             cores = 1
         shell:
             """
@@ -56,7 +56,7 @@ if config['assembler'] == "megahit":
             mem = lambda wildcards, attempt: 16 + attempt * 16,
             mem_mb = lambda wildcards, attempt: 16000 + attempt * 16000,
             runtime = 2880,
-            slurm_partition = "standard"
+            slurm_partition = "standard",
             cores = 1
         threads: 1
         shell:
@@ -80,7 +80,7 @@ if config['assembler'] == "megahit":
             mem = 32,
             mem_mb = 32000,
             runtime = 5760,
-            slurm_partition = "standard"
+            slurm_partition = "standard",
             cores = 16
         threads: 16
         shell:
@@ -101,7 +101,7 @@ if config['assembler'] == "megahit":
             mem = 4,
             mem_mb = 4000,
             runtime = 120,
-            slurm_partition = "short"
+            slurm_partition = "short",
             cores = 1
         threads: 1
         shell:
@@ -121,7 +121,7 @@ if config['assembler'] == "megahit":
             mem = 4,
             mem_mb = 4000,
             runtime = 120,
-            slurm_partition = "short"
+            slurm_partition = "short",
             cores = 1
         shell:
             """
@@ -145,7 +145,7 @@ if config['assembler'] == "megahit":
             mem = 8,
             mem_mb = 8000,
             runtime = 240,
-            slurm_partition = "short"
+            slurm_partition = "short",
             cores = 2
         threads: 2
         shell:
@@ -166,7 +166,7 @@ elif config['assembler'] == "metaspades":
             mem = 2,
             mem_mb = 2000,
             runtime = 60,
-            slurm_partition = "short"
+            slurm_partition = "short",
             cores = 1
         threads: 1
         shell:

@@ -85,7 +85,6 @@ if config['taxonomic_profiling']:
                 mem = lambda wildcards, attempt: 40 + attempt * 40,
                 mem_mb = lambda wildcards, attempt: 40000 + attempt * 40000,
                 slurm_partition = "standard",
-                mem = 80,
                 cores = 32
             params:
                 dbdir = f"{config['resourcedir']}/phylophlan3",

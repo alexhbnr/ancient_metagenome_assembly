@@ -130,7 +130,7 @@ if config['assembler'] == "megahit":
         conda: "../envs/ENVS_MEGAHIT.yaml"
         resources:
             mem = lambda wildcards: int(config['assembly_mem'] / 2),
-            mem_mb = lambda_wildcards: int(config['assembly_mem'] / 2) * 1000,
+            mem_mb = lambda wildcards: int(config['assembly_mem'] / 2) * 1000,
             runtime = 2880,
             slurm_partition = "standard",
             cores = 24,

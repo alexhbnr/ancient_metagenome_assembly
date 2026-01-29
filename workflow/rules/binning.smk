@@ -1,6 +1,6 @@
 if config['magbinning']:
 
-localrules: link_bam_binning, format_maxbin2_depth, decompress_fasta_maxbin2, decompress_fasta_concot
+    localrules: link_bam_binning, format_maxbin2_depth, decompress_fasta_maxbin2, decompress_fasta_concot
 
     rule binning_workflow:
         input: 
