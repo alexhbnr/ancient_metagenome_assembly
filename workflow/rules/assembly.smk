@@ -1,13 +1,11 @@
 import yaml
 
-import pandas as pd
-
 
 #### Auxilliary functions ######################################################
 
 def path_to_r(sample, tmpdir, suffix, prefix):
     path = sampletsv.at[sample, suffix]
-    if type(path) is float or path == "" or path == "NA":
+    if path == "" or path == "nan":
         return ""
     else:
         if config['readcorrection']:

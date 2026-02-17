@@ -21,7 +21,7 @@ os.makedirs("snakemake_tmp", exist_ok=True)
 sampletsv = pd.read_csv(config['sampletsv'], sep="\t", index_col=[0])
 sampletsv.index = sampletsv.index.astype(str)
 for c in sampletsv.columns:
-    sampletsv.loc[sampletsv[c].isnull(), c] = "NA"
+    sampletsv[c] = sampletsv[c].astype(str)
 SAMPLES = sampletsv.index.tolist()
 ################################################################################
 
