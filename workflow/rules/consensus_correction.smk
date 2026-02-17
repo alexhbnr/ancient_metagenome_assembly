@@ -100,8 +100,8 @@ if config['assembler'] == "megahit":
         resources:
             mem = 4,
             mem_mb = 4000,
-            runtime = 120,
-            slurm_partition = "short",
+            runtime = 10,
+            slurm_partition = "standard",
             cores = 1
         threads: 1
         shell:
