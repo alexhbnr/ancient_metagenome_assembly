@@ -31,3 +31,16 @@ if config['magrefinement']:
             threads: 16
             wrapper:
                 "https://www.github.com/alexhbnr/snakemake-wrappers/raw/main/bio/metawrap/bin_refinement"
+
+else:
+
+    localrules: metaWRAP_refinement
+
+    checkpoint metaWRAP_refinement:
+        input:
+            binning = "{resultdir}/binning/{sample}-{assembler}_binning.done"
+        output:
+            "{resultdir}/binning/{sample}-{assembler}_refinement.done"
+        message: "Create dummy output of metaWRAP: {wildcards.sample}"
+        shell:
+            "touch {output}"
