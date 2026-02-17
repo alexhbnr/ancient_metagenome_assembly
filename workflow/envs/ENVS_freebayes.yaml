@@ -2,6 +2,7 @@ name: bioawk
 channels:
   - conda-forge
   - bioconda
-  - defaults
 dependencies:
-  - freebayes=1.3.5
+  - bioconda::freebayes=1.3.6
+  - bioconda::vcflib=1.0.3
+  - bioconda::tabixpp=1.1.0
