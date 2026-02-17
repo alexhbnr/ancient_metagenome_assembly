@@ -1,6 +1,6 @@
 if config['magbinning']:
 
-    localrules: link_bam_binning, format_maxbin2_depth, decompress_fasta_maxbin2, decompress_fasta_concot
+    localrules: format_maxbin2_depth, decompress_fasta_maxbin2, decompress_fasta_concot
 
     rule binning_workflow:
         input: 
@@ -57,6 +57,8 @@ if config['magbinning']:
                 "v1.3.2/bio/samtools/index"
 
     elif config['assembler'] == "metaspades":
+
+        localrules: link_bam_binning
 
         rule link_bam_binning:
             input:
@@ -380,3 +382,15 @@ if config['magbinning']:
                 "{resultdir}/binning/{sample}-{assembler}_binning.done"
             shell:
                 "touch {output}"
+
+else:
+
+    localrules: checkpoint_binning
+
+    rule checkpoint_binning:
+        input:
+            "{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
+        output:
+            "{resultdir}/binning/{sample}-{assembler}_binning.done"
+        shell:
+            "touch {output}"
