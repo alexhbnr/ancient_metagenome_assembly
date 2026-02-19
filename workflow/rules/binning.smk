@@ -54,7 +54,7 @@ if config['magbinning']:
                 slurm_partition = "short"
             threads: 4
             wrapper:
-                "v1.3.2/bio/samtools/index"
+                "v8.1.1/bio/samtools/index"
 
     elif config['assembler'] == "metaspades":
 
