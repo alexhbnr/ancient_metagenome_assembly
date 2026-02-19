@@ -100,8 +100,8 @@ if config['pydamage']:
         message: "Analyse aDNA damage using PyDamage: {wildcards.sample}"
         conda: "../envs/ENVS_pydamage.yaml"
         resources:
-            mem = 12,
-            mem_mb = 12000,
+            mem = 24,
+            mem_mb = 24000,
             runtime = 20160,
             slurm_partition = "standard",
             cores = 8
