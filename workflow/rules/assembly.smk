@@ -62,7 +62,7 @@ checkpoint error_correction:
     params: 
         pe1 = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'],
         pe2 = lambda wildcards: sampletsv.at[wildcards.sample, 'R2'],
-        pe0 = lambda wildcards: f"-s {sampletsv.at[wildcards.sample, 'R0']}" if sampletsv.at[wildcards.sample, 'R0'] != "NA" else "",
+        pe0 = lambda wildcards: f"-s {sampletsv.at[wildcards.sample, 'R0']}" if sampletsv.at[wildcards.sample, 'R0'] != "nan" else "",
         fileprefix = lambda wildcards: os.path.basename(sampletsv.at[wildcards.sample, 'R1']).split("_")[0],
         filesuffix = lambda wildcards: sampletsv.at[wildcards.sample, 'R1'].split(".")[-2],
         memory = int(config['assembly_mem'] * 0.9),
