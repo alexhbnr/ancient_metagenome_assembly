@@ -1,46 +1,52 @@
 if config['contig_annotation']:
 
-    rule prokka:
+    rule genome_annotation:
+        input:
+            lambda wildcards: expand("{resultdir}/bakta/{sample}-{assembler}.gff3.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
+        output:
+            touch(f"{config['tmpdir']}/genome_annotation.done")
+
+    rule bakta:
         input:
             "{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
         output:
-            "{resultdir}/prokka/{sample}-{assembler}.gff.gz"
-        message: "Run Prokka on contigs: {wildcards.sample}"
-        conda: "../envs/ENVS_prokka.yaml"
+            "{resultdir}/bakta/{sample}-{assembler}.gff3.gz"
+        message: "Run Bakta on contigs: {wildcards.sample}"
+        # container: "docker://quay.io/biocontainers/bakta:1.12.0--pyhdfd78af_0"
+        conda: "../envs/ENVS_bakta_v1.12.0.yaml"
         resources:
-            mem = 16,
-            mem_mb = 16000,
+            mem_mb = 128000,
             runtime = 20160,
             slurm_partition = "standard",
             cores = 8
         params:
-            tmpdir = lambda wildcards: f"{config['tmpdir']}/prokka_{wildcards.sample}_{wildcards.assembler}",
-            outdir = "{resultdir}/prokka",
+            dbdir = f"{config['resourcedir']}/bakta",
+            tmpdir = lambda wildcards: f"{config['tmpdir']}/bakta_{wildcards.sample}_{wildcards.assembler}",
+            extra = "--keep-contig-headers --meta --skip-crispr",
+            outdir = "{resultdir}/bakta"
         threads: 8
         shell:
             """
             mkdir -p {params.tmpdir}
-            gunzip -c {input} > {params.tmpdir}/{wildcards.sample}-{wildcards.assembler}.fasta
-            prokka --outdir {params.tmpdir} \
-                --prefix {wildcards.sample}-{wildcards.assembler} \
+            bakta -p {wildcards.sample}-{wildcards.assembler} \
+                --db {params.dbdir} \
                 --force \
-                --compliant \
-                --metagenome \
-                --cpus {threads} \
-                --debug \
-                {params.tmpdir}/{wildcards.sample}-{wildcards.assembler}.fasta
-            cp -r {params.tmpdir}/{wildcards.sample}-{wildcards.assembler}.{{faa,ffn,fna,gbk,gff,tsv,txt}} {params.outdir}/
-            pigz -f -p 4 {params.outdir}/{wildcards.sample}-{wildcards.assembler}.{{faa,ffn,fna,gbk,gff,tsv,txt}}
+                --output {params.tmpdir} \
+                {params.extra} \
+                --threads {threads} \
+                {input}
+            cp -r {params.tmpdir}/{wildcards.sample}-{wildcards.assembler}.{{embl,faa,ffn,fna,gff3,hypotheticals.faa,hypotheticals.tsv,inference.tsv,json,tsv,txt}} {params.outdir}/
+            pigz -f -p 4 {params.outdir}/{wildcards.sample}-{wildcards.assembler}.{{embl,faa,ffn,fna,gff3,hypotheticals.faa,hypotheticals.tsv,inference.tsv,json,tsv}}
             rm -r {params.tmpdir}/
             """
 
 else:
 
-    localrules: prokka_dummy_output
+    localrules: bakta_dummy_output
 
-    rule prokka_dummy_output:
+    rule bakta_dummy_output:
         output:
-            "{resultdir}/prokka/{sample}-{assembler}.gff.gz"
+            "{resultdir}/bakta/{sample}-{assembler}.gff3.gz"
         message: "Create empty dummy files for Prokka analysis: {wildcards.sample}"
         shell:
             """
