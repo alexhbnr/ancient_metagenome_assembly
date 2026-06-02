@@ -6,6 +6,12 @@ def path_to_nonudg_r0(sample, tmpdir):
 
 if config['pydamage']:
 
+    rule pydamage_workflow:
+        input: 
+            lambda wildcards: expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
+        output:
+            touch(f"{config['tmpdir']}/pydamage.done")
+
     rule build_BowTie2_index_pydamage:
         input:
             lambda wildcards: f"{config['resultdir']}/alignment/{wildcards.assembler}/{wildcards.sample}-{wildcards.assembler}.fasta.gz"
@@ -17,9 +23,8 @@ if config['pydamage']:
             rev_index1 = temp("{tmpdir}/pydamage/{assembler}/{sample}.rev.1.bt2"),
             rev_index2 = temp("{tmpdir}/pydamage/{assembler}/{sample}.rev.2.bt2")
         message: "Index the corrected contigs for alignment using BowTie2: {wildcards.sample}"
-        conda: "../envs/ENVS_bowtie2.yaml"
+        container: "docker://quay.io/biocontainers/bowtie2:2.5.5--ha27dd3b_0"
         resources:
-            mem = 8,
             mem_mb = 8000,
             runtime = 1440,
             slurm_partition = "standard",
@@ -45,10 +50,9 @@ if config['pydamage']:
         output:
             pipe("{tmpdir}/pydamage/{assembler}/{sample}.sorted.raw.sam")
         message: "Align the non-UDG reads back to the corrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
-        conda: "../envs/ENVS_bowtie2.yaml"
+        container: "docker://quay.io/biocontainers/bowtie2:2.5.5--ha27dd3b_0"
         group: "ref_alignment_pyd"
         resources:
-            mem = 16,
             mem_mb = 16000,
             runtime = 2880,
             slurm_partition = "standard",
@@ -74,10 +78,9 @@ if config['pydamage']:
             bam = temp("{tmpdir}/pydamage/{assembler}/{sample}.sorted.pydamage.bam"),
             bai = temp("{tmpdir}/pydamage/{assembler}/{sample}.sorted.pydamage.bam.bai")
         message: "Sort the non-UDG sequencing data: {wildcards.sample}"
-        conda: "../envs/ENVS_samtools.yaml"
+        container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
         group: "ref_alignment_pyd"
         resources:
-            mem = 8,
             mem_mb = 8000,
             runtime = 1440,
             slurm_partition = "standard",
@@ -98,9 +101,8 @@ if config['pydamage']:
         output:
             "{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz"
         message: "Analyse aDNA damage using PyDamage: {wildcards.sample}"
-        conda: "../envs/ENVS_pydamage.yaml"
+        container: "docker://quay.io/biocontainers/pydamage:1.0--pyhdfd78af_0"
         resources:
-            mem = 24,
             mem_mb = 24000,
             runtime = 20160,
             slurm_partition = "standard",
