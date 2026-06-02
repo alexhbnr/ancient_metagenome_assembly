@@ -1,4 +1,5 @@
 from glob import glob
+import json
 import os
 from pathlib import Path
 import re
@@ -16,25 +17,27 @@ if len(snakemake.input.checkm) > 0:
     # BUSCO
     def parse_busco(fn):
         with open(fn, "rt") as buscofile:
-            busco_counts = []
-            for i, line in enumerate(buscofile):
-                if i == 1:
-                    lineage = re.search(r'# The lineage dataset is: ([a-z0-9_]+) \(Creation date: .+\)',
-                                        line.rstrip()).group(1)
-                elif i > 9 and i < 15:
-                    busco_counts.append(tuple(line.rstrip().split("\t")[1:3]))
-            return pd.DataFrame(busco_counts, columns=['nBUSCOs', 'typeBUSCOs']) \
-                .assign(lineage=lineage,
-                        binID=f"bin.{int(os.path.basename(os.path.dirname(fn)))}")
+            busco_output = json.load(buscofile)
+        lineage = busco_output['lineage_dataset']['name']
+        b_counts_d = busco_output['results']['Multi copy percentage']
+        b_counts_s = busco_output['results']['Single copy percentage']
+        b_counts_f = busco_output['results']['Fragmented percentage']
+        b_counts_m = busco_output['results']['Missing percentage']
+        b_counts_t = busco_output['results']['n_markers']
+        b_counts = pd.DataFrame.from_dict({'binID': f"bin.{int(os.path.basename(os.path.dirname(fn)))}",
+                                           'lineage': [lineage],
+                                           'D': [b_counts_d],
+                                           'S': [b_counts_s],
+                                           'F': [b_counts_f],
+                                           'M': [b_counts_m],
+                                           'T': [b_counts_t]
+                                           }, orient="columns")
+        return b_counts
+
     if 'busco' in snakemake.config['quality_evaluation']:
         busco = pd.concat([parse_busco(fn)
                         for b in snakemake.input.busco
-                        for fn in glob(f"{b}/short_summary.*")])
-        busco['nBUSCOs'] = busco['nBUSCOs'].astype(int)
-        busco = pd.pivot_table(busco, values="nBUSCOs", index=['binID', 'lineage'],
-                            columns=['typeBUSCOs'])
-        busco.columns = ['D', 'S', 'F', 'M', 'T']
-        busco = busco.reset_index()
+                        for fn in glob(f"{b}/short_summary.*.json")])
 
     # Merge
     ## checkM & GUNC following gunc checkm_merge
@@ -60,11 +63,11 @@ if len(snakemake.input.checkm) > 0:
                       'checkM.contamination', 'checkM.strain_heterogeneity']
     ## BUSCO
     if 'busco' in snakemake.config['quality_evaluation']:
-        busco_generic = busco.loc[busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])] \
+        busco_generic = busco.loc[busco['lineage'].isin(['bacteria_odb12', 'archaea_odb12'])] \
             .drop(['lineage'], axis=1)
         busco_generic.columns = [f"BUSCO_generic.{v}" if i > 0 else v
                                 for i, v in enumerate(busco_generic.columns)]
-        busco_specific = busco.loc[~busco['lineage'].isin(['bacteria_odb10', 'archaea_odb10'])]
+        busco_specific = busco.loc[~busco['lineage'].isin(['bacteria_odb12', 'archaea_odb12'])]
         busco_specific.columns = [f"BUSCO_specific.{v}" if i > 0 else v
                                 for i, v in enumerate(busco_specific.columns)]
     else:
