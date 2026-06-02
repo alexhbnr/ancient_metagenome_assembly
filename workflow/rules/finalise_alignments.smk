@@ -1,3 +1,9 @@
+rule finalise_alignment:
+    input:
+        lambda wildcards: expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
+    output:
+        touch(f"{config['tmpdir']}/finalise_alignment.done")
+
 rule samtools_sort_by_name:
     input:
         bam = "{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam",
@@ -5,10 +11,9 @@ rule samtools_sort_by_name:
     output:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.nsorted.bam")
     message: "Sort BAM file by name: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     group: "samtools_fixmate"
     resources:
-        mem = 16,
         mem_mb = 16000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -25,10 +30,9 @@ rule samtools_fixmate:
     output:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.fixmate.bam")
     message: "Apply samtools fixmate: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     group: "samtools_fixmate"
     resources:
-        mem = 8,
         mem_mb = 8000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -45,10 +49,9 @@ rule samtools_sort_by_coord:
     output:
         temp("{tmpdir}/alignment/{assembler}/{sample}.fixmate.sorted.bam")
     message: "Sort BAM file back to coordinates: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     group: "samtools_fixmate"
     resources:
-        mem = 16,
         mem_mb = 16000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -65,9 +68,8 @@ rule samtools_markup:
     output:
         "{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam"
     message: "Mark duplicate reads: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     resources:
-        mem = 16,
         mem_mb = 16000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -87,9 +89,8 @@ rule samtools_flagstat:
     output:
         "{resultdir}/stats/flagstat/{sample}-{assembler}.flagstat"
     message: "Samtools flagstat: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     resources:
-        mem = 4,
         mem_mb = 4000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -107,9 +108,8 @@ rule samtools_index:
     output:
         "{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai"
     message: "Index deduplicated BAM file: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     resources:
-        mem = 4,
         mem_mb = 4000,
         runtime = 240,
         slurm_partition = "short",

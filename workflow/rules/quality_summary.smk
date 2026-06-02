@@ -1,3 +1,10 @@
+rule quality_summary:
+    input:
+        caln50  = lambda wildcards: expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        quast = lambda wildcards: expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
+    output:
+        touch(f"{config['tmpdir']}/quality_summary.done")
+
 #### CalN50 ####################################################################
 
 localrules: download_caln50_script
@@ -18,9 +25,8 @@ rule caln50:
     output:
         "{resultdir}/stats/caln50/{sample}-{assembler}.caln"
     message: "Calculate N50 related statistics of the contigs: {wildcards.sample}"
-    conda: "../envs/ENVS_minimap2.yaml"
+    container: "docker://quay.io/biocontainers/minimap2:2.30--h577a1d6_0"
     resources:
-        mem = 4,
         mem_mb = 4000,
         runtime = 120,
         slurm_partition = "short",
@@ -40,9 +46,8 @@ rule metaQUAST:
     output:
         "{resultdir}/stats/metaquast/{sample}-{assembler}/report.html"
     message: "Run metaQUAST on the contigs: {wildcards.sample}"
-    conda: "../envs/ENVS_quast.yaml"
+    container: "docker://quay.io/biocontainers/quast:5.3.0--py313pl5321h5ca1c30_2"
     resources:
-        mem = lambda wildcards, attempt: 24 + attempt * 24,
         mem_mb = lambda wildcards, attempt: 24000 + attempt * 24000,
         runtime = 1400,
         slurm_partition = "standard",
