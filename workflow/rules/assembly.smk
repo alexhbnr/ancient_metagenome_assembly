@@ -51,10 +51,9 @@ checkpoint error_correction:
     output:
         "{tmpdir}/error_correction/spadeshammer_{sample}/corrected/corrected.yaml"
     message: "Correct reads of sample {wildcards.sample} using SPAdes hammer"
-    conda: "../envs/ENVS_metaSPAdes.yaml"
+    container: "docker://quay.io/biocontainers/spades:3.15.5--h5fb382e_3"
     group: "spadeshammer"
     resources:
-        mem = config['assembly_mem'],
         mem_mb = int(config['assembly_mem']) * 1000,
         runtime = 5760,
         slurm_partition = "standard",
@@ -93,7 +92,6 @@ rule rename_spadeshammer_fastqs:
     message: "Rename the corrected FastQs: {wildcards.sample}"
     group: "spadeshammer"
     resources:
-        mem = 2,
         mem_mb = 2000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -125,9 +123,8 @@ if config['assembler'] == "megahit":
         output:
             "{tmpdir}/assembly/megahit/{sample}/final.contigs.fa"
         message: "Assemble the metagenomic data using MEGAHIT: {wildcards.sample}"
-        conda: "../envs/ENVS_MEGAHIT.yaml"
+        container: "docker://quay.io/biocontainers/megahit:1.2.9--haf24da9_8"
         resources:
-            mem = lambda wildcards: int(config['assembly_mem'] / 2),
             mem_mb = lambda wildcards: int(config['assembly_mem'] / 2) * 1000,
             runtime = 2880,
             slurm_partition = "standard",
@@ -168,7 +165,6 @@ if config['assembler'] == "megahit":
         message: "Clean up assembly folder of MEGAHIT: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",
@@ -198,9 +194,8 @@ elif config['assembler'] == "metaspades":
         output:
             "{tmpdir}/assembly/metaspades/{sample}/contigs.fasta"
         message: "Assemble the metagenomic data with metaSPAdes: {wildcards.sample}"
-        conda: "../envs/ENVS_metaSPAdes.yaml"
+        container: "docker://quay.io/biocontainers/spades:3.15.5--h5fb382e_3"
         resources:
-            mem = config['assembly_mem'],
             mem_mb = int(config['assembly_mem']) * 1000,
             runtime = 5760,
             slurm_partition = "standard",
@@ -237,7 +232,6 @@ elif config['assembler'] == "metaspades":
         message: "Clean up assembly folder of metaSPAdes: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",

@@ -17,9 +17,8 @@ if config['assembler'] == "metaspades":
         output:
             temp("{tmpdir}/alignment/{assembler}/{sample}.raw.fasta")
         message: "Filter contigs for a minimal length of >= {MINLENGTH} bp: {wildcards.sample}"
-        conda: "../envs/ENVS_bioawk.yaml"
+        container: "https://depot.galaxyproject.org/singularity/bioawk%3A1.0--he4a0461_9"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",
@@ -42,7 +41,6 @@ elif config['assembler'] == "megahit":
         message: "Link FastA file with contigs from MEGAHIT: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",
@@ -61,9 +59,8 @@ rule build_BowTie2_index:
     output:
         "{tmpdir}/alignment/{assembler}/{sample}.build_BowTie2_index.done"
     message: "Index the contigs for alignment using BowTie2: {wildcards.sample}"
-    conda: "../envs/ENVS_bowtie2.yaml"
+    container: "docker://quay.io/biocontainers/bowtie2:2.5.5--ha27dd3b_0"
     resources:
-        mem = 8,
         mem_mb = 8000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -84,10 +81,9 @@ rule BowTie2_alignment:
     output:
         pipe("{tmpdir}/alignment/{assembler}/{sample}.sorted.raw.sam")
     message: "Align reads back to the uncorrected contigs using BowTie2's very-sensitive setting: {wildcards.sample}"
-    conda: "../envs/ENVS_bowtie2.yaml"
+    container: "docker://quay.io/biocontainers/bowtie2:2.5.5--ha27dd3b_0"
     group: "ref_alignment"
     resources:
-        mem = 16,
         mem_mb = 16000,
         runtime = 2880,
         slurm_partition = "standard",
@@ -113,10 +109,9 @@ rule samtools_sort:
         bam = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam",
         bai = "{tmpdir}/alignment/{assembler}/{sample}.sorted.noncorr.bam.bai"
     message: "Sort the sequencing data: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     group: "ref_alignment"
     resources:
-        mem = 8,
         mem_mb = 8000,
         runtime = 1440,
         slurm_partition = "standard",
@@ -136,9 +131,8 @@ rule samtools_depth:
     output:
         temp("{tmpdir}/alignment/{assembler}/{sample}.samtools_depth")
     message: "Determine the depth along the contigs with samtools: {wildcards.sample}"
-    conda: "../envs/ENVS_samtools.yaml"
+    container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     resources:
-        mem = 8,
         mem_mb = 8000,
         runtime = 1440,
         slurm_partition = "standard",

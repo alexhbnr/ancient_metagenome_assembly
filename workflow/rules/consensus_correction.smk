@@ -14,7 +14,6 @@ if config['assembler'] == "megahit":
         message: "Decompress the FastA file with the de-novo assembled contigs of MEGAHIT: {wildcards.sample}"
         conda: "../envs/ENVS_unixEssentials.yaml"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",
@@ -32,9 +31,8 @@ if config['assembler'] == "megahit":
         output:
             temp("{tmpdir}/contig_correction/{sample}.fasta.fai")
         message: "Generate FastA index for de-novo assembled contigs: {wildcards.sample}"
-        conda: "../envs/ENVS_samtools.yaml"
+        container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",
@@ -51,9 +49,8 @@ if config['assembler'] == "megahit":
         output:
             temp("{tmpdir}/contig_correction/{sample}.chunks")
         message: "Determine regions with approx. equal coverage to have 100 chuncks: {wildcards.sample}"
-        conda: "../envs/ENVS_freebayes.yaml"
+        container: "docker://quay.io/biocontainers/freebayes:1.3.9--hbefcdb2_3"
         resources:
-            mem = lambda wildcards, attempt: 16 + attempt * 16,
             mem_mb = lambda wildcards, attempt: 16000 + attempt * 16000,
             runtime = 2880,
             slurm_partition = "standard",
@@ -74,10 +71,9 @@ if config['assembler'] == "megahit":
         output:
             pipe("{tmpdir}/contig_correction/{sample}.vcf")
         message: "Genotype the contigs using freeBayes in parallel mode: {wildcards.sample}"
-        conda: "../envs/ENVS_freebayes.yaml"
+        container: "docker://quay.io/biocontainers/freebayes:1.3.9--hbefcdb2_3"
         group: "freebayes"
         resources:
-            mem = 32,
             mem_mb = 32000,
             runtime = 5760,
             slurm_partition = "standard",
@@ -95,10 +91,9 @@ if config['assembler'] == "megahit":
         output:
             "{tmpdir}/contig_correction/{sample}.vcf.gz"
         message: "Compress the VCF file produced by freebayes: {wildcards.sample}"
-        conda: "../envs/ENVS_samtools.yaml"
+        container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
         group: "freebayes"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 10,
             slurm_partition = "standard",
@@ -116,9 +111,8 @@ if config['assembler'] == "megahit":
             vcf = "{resultdir}/consensus_correction/{assembler}/{sample}.filter.vcf.gz",
             tbi = "{resultdir}/consensus_correction/{assembler}/{sample}.filter.vcf.gz.tbi"
         message: "Discard low-quality differences between MEGAHIT and freebayes consensus: {wildcards.sample}"
-        conda: "../envs/ENVS_bcftools.yaml"
+        container: "docker://quay.io/biocontainers/bcftools:1.23.1--hb2cee57_0"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 120,
             slurm_partition = "short",
@@ -140,9 +134,8 @@ if config['assembler'] == "megahit":
         output:
             "{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz"
         message: "Correct the consensus sequence of the contigs: {wildcards.sample}"
-        conda: "../envs/ENVS_bcftools.yaml"
+        container: "docker://quay.io/biocontainers/bcftools:1.23.1--hb2cee57_0"
         resources:
-            mem = 8,
             mem_mb = 8000,
             runtime = 240,
             slurm_partition = "short",
@@ -155,15 +148,14 @@ if config['assembler'] == "megahit":
 
 elif config['assembler'] == "metaspades":
 
-    rule link_reffasta:
+    rule cp_reffasta:
         input:
             lambda wildcards: f"{config['tmpdir']}/alignment/{wildcards.assembler}/{wildcards.sample}.raw.fasta"
         output:
             "{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz"
-        message: "Link the FastA file with the de-novo assembled contigs of metaSPAdes without corrections: {wildcards.sample}"
-        conda: "../envs/ENVS_samtools.yaml"
+        message: "Copy the FastA file with the de-novo assembled contigs of metaSPAdes without corrections: {wildcards.sample}"
+        container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
         resources:
-            mem = 2,
             mem_mb = 2000,
             runtime = 60,
             slurm_partition = "short",
