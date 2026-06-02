@@ -8,7 +8,7 @@ import shutil
 import pandas as pd
 from snakemake.utils import min_version
 
-min_version("7.0")
+min_version("9.15")
 
 os.environ["OPENBLAS_NUM_THREADS"] = '1'
 os.environ["OMP_NUM_THREADS"] = '1'
@@ -33,7 +33,7 @@ include: "rules/consensus_correction.smk"
 include: "rules/rename_sort_contigs.smk"
 include: "rules/finalise_alignments.smk"
 include: "rules/quality_summary.smk"
-include: "rules/prokka.smk"
+include: "rules/genome_annotation.smk"
 include: "rules/pydamage.smk"
 include: "rules/binning.smk"
 include: "rules/refinement.smk"
@@ -56,7 +56,7 @@ def expected_taxprofilers():
         if 'gtdbtk' in config['taxprofilers']:
             taxprofilers.append(f"{config['resultdir']}/stats/gtdbtk/gtdbtk.bac120.summary.tsv")
         if 'phylophlan3' in config['taxprofilers']:
-            taxprofilers.append(f"{config['resultdir']}/stats/phylophlan3/phylophlan3_mash.tsv")
+            taxprofilers.append(f"{config['resultdir']}/stats/phylophlan3/genome_assignment.tsv")
     return taxprofilers
 
 ################################################################################
@@ -72,7 +72,7 @@ rule all:
         f"{config['resultdir']}/summary_{config['projname']}.tsv",
         f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done",
         # TODO: summarise all bins for a project
-        lambda wildcards: expand("{resultdir}/binning/{sample}-{assembler}_refinement.done", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
+        lambda wildcards: expand("{resultdir}/binning/metawrap/BIN_REFINEMENT/{sample}-{assembler}/metawrap_50_10_bins.stats", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
         lambda wildcards: expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
         
 
@@ -93,7 +93,7 @@ rule summary:
         dedup = lambda wildcards: expand("{resultdir}/alignment/{assembler}/{sample}.sorted.dedup.bam.bai", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
         caln50 = lambda wildcards: expand("{resultdir}/stats/caln50/{sample}-{assembler}.caln", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
         metaquast = lambda wildcards: expand("{resultdir}/stats/metaquast/{sample}-{assembler}/report.html", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
-        prokka = lambda wildcards: expand("{resultdir}/prokka/{sample}-{assembler}.gff.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
+        prokka = lambda wildcards: expand("{resultdir}/bakta/{sample}-{assembler}.gff3.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards)),
         pydamage = lambda wildcards: expand("{resultdir}/pydamage/{sample}-{assembler}.pydamage.csv.gz", resultdir=[config['resultdir']], assembler=[config['assembler']], sample=successful_samples(wildcards))
     output:
         "{resultdir}/summary_{projname}.tsv"
@@ -104,7 +104,7 @@ rule summary:
         caln50_dir = "{resultdir}/stats/caln50",
         flagstat_dir = "{resultdir}/stats/flagstat",
         metaquast_dir = "{resultdir}/stats/metaquast",
-        prokka_dir = "{resultdir}/prokka",
+        prokka_dir = "{resultdir}/bakta",
         pydamage = lambda wildcards: config['pydamage'],
         pydamage_dir = "{resultdir}/pydamage"
     script:
