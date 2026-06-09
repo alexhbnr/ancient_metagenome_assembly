@@ -1,0 +1,7 @@
+name: phylophlan
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - bioconda::phylophlan=3.2.1
+  - bioconda::prodigal=2.6.3

@@ -14,7 +14,6 @@ if config['assembler'] == "megahit":
             temp("{tmpdir}/alignment/{assembler}/{sample}.avg_depth")
         message: "Infer mean coverage per contig: {wildcards.sample}"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 240,
             slurm_partition = "short",
@@ -45,7 +44,6 @@ if config['assembler'] == "megahit":
         message: "Fix contig names of the MEGAHIT to make them look like the metaSPAdes ones: {wildcards.sample}"
         conda: "../envs/ENVS_Python.yaml"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 240,
             slurm_partition = "short",
@@ -64,9 +62,8 @@ if config['assembler'] == "megahit":
             bam = temp("{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam"),
             bai = temp("{tmpdir}/alignment/{assembler}/{sample}.sorted.renamed.bam.bai"),
         message: "Replace the header of the BAM file with the ones with the correct contig names: {wildcards.sample}"
-        conda: "../envs/ENVS_samtools.yaml"
+        container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
         resources:
-            mem = 4,
             mem_mb = 4000,
             runtime = 240,
             slurm_partition = "short",
@@ -83,13 +80,13 @@ elif config['assembler'] == "metaspades":
 
     localrules: copy_fasta, link_bam
 
-    rule copy_fasta:
+    rule link_fasta:
         input:
             "{resultdir}/consensus_correction/{assembler}/{sample}_contigs.fasta.gz"
         output:
             "{resultdir}/alignment/{assembler}/{sample}-{assembler}.fasta.gz"
-        message: "Copy FastA file: {wildcards.sample}"
-        conda: "../envs/ENVS_samtools.yaml"
+        message: "Link FastA file: {wildcards.sample}"
+        container: "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
         params:
             prefix = lambda wildcards: f"{os.getcwd()}/" if wildcards.resultdir[0] != "/" else "" 
         shell:
