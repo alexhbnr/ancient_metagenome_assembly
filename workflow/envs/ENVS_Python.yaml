@@ -11,5 +11,6 @@ dependencies:
   - scipy
   - pysam=0.18.0
   - pyfastx
+  - tqdm
   - pip:
       - bgzip
