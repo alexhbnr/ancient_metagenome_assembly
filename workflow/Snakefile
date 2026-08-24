@@ -70,10 +70,9 @@ localrules: validate_sampletsv, summary, rename_taxprofilers
 rule all:
     input:
         f"{config['resultdir']}/summary_{config['projname']}.tsv",
-        f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done",
-        # TODO: summarise all bins for a project
-        lambda wildcards: expand("{resultdir}/binning/metawrap/BIN_REFINEMENT/{sample}-{assembler}/metawrap_50_10_bins.stats", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
-        lambda wildcards: expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]),
+        lambda wildcards: f"{config['resultdir']}/stats/{config['projname']}_taxprofilers.done" if config['taxonomic_profiling'] else [],
+        lambda wildcards: expand("{resultdir}/binning/metawrap/BIN_REFINEMENT/{sample}-{assembler}/metawrap_50_10_bins.stats", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]) if config['magrefinement'] else [],
+        lambda wildcards: expand("{resultdir}/stats/bin_quality/{sample}-{assembler}_binqualities.tsv", resultdir=[config['resultdir']], sample=successful_samples(wildcards), assembler=[config['assembler']]) if config['magrefinement'] else []
         
 
 rule validate_sampletsv:

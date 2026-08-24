@@ -5,7 +5,7 @@ import yaml
 
 def path_to_r(sample, tmpdir, suffix, prefix):
     path = sampletsv.at[sample, suffix]
-    if path == "" or path == "nan":
+    if path == "" or isinstance(path, float):
         return ""
     else:
         if config['readcorrection']:
