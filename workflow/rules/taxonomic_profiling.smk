@@ -41,14 +41,21 @@ if config['taxonomic_profiling']:
             output:
                 f"{config['resourcedir']}/gtdbtk/gtdbtk_{config['gtdb_version']}/metadata/metadata.txt"
             message: "Download and set-up the GTDBTK database"
-            container: "docker://quay.io/biocontainers/gtdbtk:2.7.1--pyhdfd78af_1"
+            container:
+                lambda wildcards: {
+                        'r207_v2': "docker://quay.io/biocontainers/gtdbtk:2.3.2--pyhdfd78af_0",
+                        'r214.1': "docker://quay.io/biocontainers/gtdbtk:2.3.2--pyhdfd78af_0",
+                        'r220.0': "https://depot.galaxyproject.org/singularity/gtdbtk%3A2.4.1--pyhdfd78af_1",
+                        'r226.0': "https://depot.galaxyproject.org/singularity/gtdbtk%3A2.4.1--pyhdfd78af_1",
+                        'r232.0': "docker://quay.io/biocontainers/gtdbtk:2.7.1--pyhdfd78af_1",
+                        }[config['gtdb_version']]
             params:
                 url = {'r207_v2': "https://data.gtdb.ecogenomic.org/releases/release207/207.0/auxillary_files/gtdbtk_r207_v2_data.tar.gz",
                        'r214.1': "https://data.gtdb.ecogenomic.org/releases/release214/214.1/auxillary_files/gtdbtk_r214_data.tar.gz",
                        'r220.0': "https://data.gtdb.ecogenomic.org/releases/release220/220.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r220_data.tar.gz",
                        'r226.0': "https://data.gtdb.ecogenomic.org/releases/release226/226.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r226_data.tar.gz",
                        'r232.0': "https://data.gtdb.ecogenomic.org/releases/release232/232.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r232_data.tar.gz",
-                       }[config['gtdb_version']],
+                }[config['gtdb_version']],
                 resourcedir = config['resourcedir']
             shell:
                 """
